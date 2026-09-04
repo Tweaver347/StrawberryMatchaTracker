@@ -107,7 +107,8 @@ const APP_MODULES = [
   "/app-log-save.js",
   "/app-settings.js",
   "/app-utils.js",
-  "/quick-wins.js"
+  "/quick-wins.js",
+  "/quick-wins-archive-fix.js"
 ];
 
 (async function loadScrapbookApp() {
