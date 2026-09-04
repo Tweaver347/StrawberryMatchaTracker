@@ -44,7 +44,7 @@ async function loadData() {
         draftsResponse.json(),
         communityResponse.json(),
       ]);
-      state.entries = (mineData.entries || []).map(attachLocalPhotoIfNeeded);
+      state.entries = mergeRemoteWithPendingEntries((mineData.entries || []).map(attachLocalPhotoIfNeeded), localEntries);
       state.drafts = mergeDrafts((draftsData.entries || []).map(attachLocalPhotoIfNeeded), localDrafts);
       state.communityEntries = communityData.entries || [];
       state.cloudAvailable = true;
