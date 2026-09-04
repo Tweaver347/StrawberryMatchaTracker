@@ -1,0 +1,119 @@
+.desktop-nav-item,
+.desktop-log-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.nav-tab-emoji {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  line-height: 1;
+  font-size: 1.05rem;
+}
+
+.mobile-nav-item,
+.mobile-log-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.mobile-nav .nav-tab-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.preferences-label-button {
+  width: auto;
+  min-width: 43px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.preferences-gear {
+  line-height: 1;
+}
+
+.preferences-button-label {
+  font-size: .82rem;
+  font-weight: 900;
+}
+
+.achievement-controls {
+  display: grid;
+  grid-template-columns: minmax(190px, .7fr) minmax(210px, .8fr) 1fr;
+  gap: 12px;
+  align-items: end;
+  margin: 18px 0 20px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface) 92%, var(--berry-100));
+  box-shadow: var(--shadow-small);
+}
+
+.achievement-control-field {
+  display: grid;
+  gap: 6px;
+}
+
+.achievement-control-field > span {
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+.achievement-control-field .text-input {
+  min-height: 44px;
+}
+
+.achievement-view-count {
+  justify-self: end;
+  align-self: center;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 900;
+}
+
+#achievementBoard [hidden] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .preferences-label-button {
+    padding-inline: 12px;
+  }
+
+  .preferences-button-label {
+    display: inline;
+  }
+
+  .achievement-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .achievement-view-count {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 520px) {
+  .achievement-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-view-count {
+    grid-column: auto;
+  }
+}
