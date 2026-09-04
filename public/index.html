@@ -3,501 +3,416 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f45f86" />
-  <meta name="description" content="Track, rate, map, and remember every strawberry matcha." />
+  <meta name="theme-color" content="#f58aa8" />
+  <meta name="description" content="A handmade digital scrapbook for every strawberry matcha, cafe, and memory." />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Matcha Tracker" />
+  <meta name="apple-mobile-web-app-title" content="Matcha Scrapbook" />
   <title>Strawberry Matcha Tracker</title>
+
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to main content</a>
-  <div class="berry-glow berry-glow-one" aria-hidden="true"></div>
-  <div class="berry-glow berry-glow-two" aria-hidden="true"></div>
-  <div class="berry-dots" aria-hidden="true"></div>
 
-  <header class="topbar">
-    <button class="brand" type="button" data-view="collection" aria-label="Go to My matchas">
-      <span class="brand-mark" aria-hidden="true">🍓</span>
-      <span>
+  <div class="paper-noise" aria-hidden="true"></div>
+  <div class="doodle doodle-berry" aria-hidden="true">🍓</div>
+  <div class="doodle doodle-leaf" aria-hidden="true">✿</div>
+  <div class="doodle doodle-sparkle" aria-hidden="true">✦</div>
+
+  <header class="app-header">
+    <button class="brand-button" type="button" data-view="home" aria-label="Open Home">
+      <span class="brand-sticker" aria-hidden="true">🍓</span>
+      <span class="brand-copy">
         <strong>Strawberry Matcha</strong>
-        <small>tracker</small>
+        <small>my little drink scrapbook</small>
       </span>
     </button>
 
-    <nav class="topnav" aria-label="Primary navigation">
-      <button class="nav-pill is-active" type="button" data-view="collection" aria-current="page">My matchas</button>
-      <button class="nav-pill" type="button" data-view="map">Map</button>
-      <button class="nav-pill" type="button" data-view="profile">Profile</button>
-      <button class="nav-pill" type="button" data-view="settings">Settings</button>
-      <button class="nav-icon" type="button" id="tourButton" title="Take the app tour" aria-label="Take the app tour">?</button>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <button class="desktop-nav-item is-active" type="button" data-view="home" aria-current="page">Home</button>
+      <button class="desktop-nav-item" type="button" data-view="places">Places</button>
+      <button class="desktop-log-button" type="button" data-log-matcha><span aria-hidden="true">📷</span> Log a Matcha</button>
+      <button class="desktop-nav-item" type="button" data-view="map">Map</button>
+      <button class="desktop-nav-item" type="button" data-view="profile">Profile</button>
     </nav>
 
-    <div class="account-area" id="accountArea">
-      <a class="google-button" href="/auth/google">
-        <span class="google-g" aria-hidden="true">G</span>
-        <span>Continue with Google</span>
-      </a>
+    <div class="header-actions">
+      <button class="icon-button" type="button" id="tourButton" aria-label="Open the first-launch tour" title="App tour">?</button>
+      <div id="accountArea" class="account-area">
+        <a class="account-button" href="/auth/google"><span class="google-dot" aria-hidden="true">G</span><span>Sign in</span></a>
+      </div>
     </div>
   </header>
 
-  <main class="page-shell" id="mainContent" tabindex="-1">
-    <section class="app-view" id="collectionView" aria-labelledby="heroTitle">
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="eyebrow">Your sweetest little drink diary</span>
-          <h1 id="heroTitle">Remember every <span>strawberry matcha.</span></h1>
-          <p>Take a photo, save the cafe, rate the matcha and the vibe, then keep the ones worth ordering again.</p>
-          <div class="hero-actions">
-            <button class="primary-button" type="button" id="addMatchaButton">
-              <span aria-hidden="true">＋</span> Log a matcha
-            </button>
-            <button class="soft-button" type="button" id="useLocationHeroButton">
-              <span aria-hidden="true">⌖</span> Explore the map
-            </button>
-          </div>
+  <main id="mainContent" class="page-shell" tabindex="-1">
+    <section class="app-view is-active" id="homeView" data-view-panel="home" aria-labelledby="homeTitle">
+      <section class="capture-hero scrapbook-sheet">
+        <span class="tape tape-top-left" aria-hidden="true"></span>
+        <span class="tape tape-bottom-right" aria-hidden="true"></span>
+        <div class="hero-doodle" aria-hidden="true">🍓 + 🍵</div>
+        <div class="capture-hero-copy">
+          <span class="hand-label">today's page</span>
+          <h1 id="homeTitle">Found a strawberry matcha?</h1>
+          <p>Capture the drink, confirm the cafe, tap your strawberry rating, and get back to the moment.</p>
+          <button class="hero-log-button" type="button" data-log-matcha>
+            <span class="camera-badge" aria-hidden="true">📷</span>
+            <span><strong>Log a Matcha</strong><small>Photo + place + rating. That’s it.</small></span>
+            <span class="button-arrow" aria-hidden="true">→</span>
+          </button>
         </div>
-
-        <div class="hero-card" aria-label="Decorative strawberry matcha rating preview">
-          <div class="layered-drink" aria-hidden="true">
-            <div class="drink-foam"></div>
-            <div class="drink-strawberry"></div>
-            <div class="drink-matcha"></div>
-            <span class="drink-berry">🍓</span>
+        <div class="hero-polaroid" aria-hidden="true">
+          <div class="mock-photo">
+            <span class="mock-cup"><i></i><b></b><em></em></span>
           </div>
-          <div class="hero-rating-copy">
-            <span class="tiny-label">Today’s mission</span>
-            <strong>Find a five-star pour</strong>
-            <div class="preview-stars" aria-label="Five decorative stars">★★★★★</div>
-            <small>Good matcha. Good berries. Good vibes.</small>
-          </div>
+          <span>another sweet little memory</span>
         </div>
       </section>
 
-      <section class="collection-section" aria-labelledby="collectionTitle">
+      <section class="recent-section" aria-labelledby="recentTitle">
         <div class="section-heading">
           <div>
-            <span class="eyebrow">Your collection</span>
-            <h2 id="collectionTitle">Matchas worth remembering</h2>
+            <span class="hand-label">fresh from the scrapbook</span>
+            <h2 id="recentTitle">Recent Matchas</h2>
           </div>
-          <div class="filter-row" role="group" aria-label="Entry filters">
-            <button class="filter-chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
-            <button class="filter-chip" type="button" data-filter="favorites" aria-pressed="false">Favorites</button>
-            <button class="filter-chip" type="button" data-filter="shared" aria-pressed="false">Published</button>
-          </div>
+          <div class="swipe-hint" id="swipeHint" aria-hidden="true">swipe memories <span>→</span></div>
         </div>
 
-        <div class="stats-grid" aria-label="Matcha statistics">
-          <article class="stat-card">
-            <span>Logged</span>
-            <strong id="loggedCount">0</strong>
-            <small>matchas</small>
-          </article>
-          <article class="stat-card">
-            <span>Average</span>
-            <strong id="averageRating">—</strong>
-            <small>stars</small>
-          </article>
-          <article class="stat-card">
-            <span>Favorites</span>
-            <strong id="favoriteCount">0</strong>
-            <small>saved</small>
-          </article>
-          <article class="stat-card strawberry-stat">
-            <span>Would order again</span>
-            <strong id="orderAgainPercent">—</strong>
-            <small>of your drinks</small>
-          </article>
-        </div>
+        <div class="memory-track" id="recentTrack" aria-live="polite"></div>
 
-        <div class="entry-grid" id="entryGrid"></div>
-
-        <div class="empty-state" id="emptyState">
-          <div class="empty-icon" aria-hidden="true">🍵</div>
-          <h3>Your first matcha is waiting.</h3>
-          <p>Take a photo or choose one from your camera roll, add a quick rating, and start your collection.</p>
-          <button class="primary-button" type="button" id="emptyAddButton">Log my first matcha</button>
+        <div class="empty-paper" id="homeEmptyState">
+          <span class="empty-sticker" aria-hidden="true">🍓</span>
+          <h3>Your scrapbook is ready.</h3>
+          <p>Your first photo, place, and strawberry rating will become the first page.</p>
+          <button class="primary-button" type="button" data-log-matcha>Log my first matcha</button>
         </div>
       </section>
     </section>
 
-    <section class="app-view" id="mapView" hidden aria-labelledby="mapTitle">
-      <div class="section-heading map-heading">
-        <div>
-          <span class="eyebrow">Community map</span>
-          <h2 id="mapTitle">Where the good matcha lives</h2>
-          <p>Only entries people choose to publish appear here.</p>
-        </div>
-        <button class="soft-button" type="button" id="mapLocateButton"><span aria-hidden="true">⌖</span> Center on me</button>
-      </div>
-      <div class="map-layout">
-        <div id="communityMap" class="community-map" aria-label="Map of published strawberry matcha locations"></div>
-        <aside class="map-list-panel" aria-label="Published matcha locations">
-          <div class="map-list-heading">
-            <strong>Published spots</strong>
-            <span id="communityCount">0 places</span>
-          </div>
-          <div id="communityList" class="community-list"></div>
-        </aside>
-      </div>
-    </section>
-
-    <section class="app-view" id="profileView" hidden aria-labelledby="profileViewTitle">
-      <div class="profile-hero-card">
-        <div class="profile-avatar-large" id="profileAvatarLarge" aria-hidden="true">🍓</div>
-        <div class="profile-hero-copy" id="profileIdentity">
-          <span class="eyebrow">Your profile</span>
-          <h2 id="profileViewTitle">Guest matcha fan</h2>
-          <p>Sign in to keep your collection tied to your account.</p>
-        </div>
-        <div class="profile-hero-actions" id="profileHeroActions">
-          <a class="primary-button" href="/auth/google"><span class="google-g" aria-hidden="true">G</span> Sign in with Google</a>
-        </div>
+    <section class="app-view" id="placesView" data-view-panel="places" hidden aria-labelledby="placesTitle">
+      <div class="view-intro scrapbook-sheet compact-sheet">
+        <span class="tape tape-top-right" aria-hidden="true"></span>
+        <span class="hand-label">notes for future me</span>
+        <h1 id="placesTitle">Places I’ve learned about</h1>
+        <p>Your visits become useful guidance: where to go back, where to pause, and what the community has been seeing lately.</p>
       </div>
 
-      <div class="profile-stats-grid" aria-label="Profile statistics">
-        <article class="profile-stat"><span>Matchas logged</span><strong id="profileLoggedCount">0</strong></article>
-        <article class="profile-stat"><span>Average rating</span><strong id="profileAverageRating">—</strong></article>
-        <article class="profile-stat"><span>Favorites</span><strong id="profileFavoriteCount">0</strong></article>
-        <article class="profile-stat"><span>Published</span><strong id="profilePublishedCount">0</strong></article>
-      </div>
+      <section class="place-section" aria-labelledby="favoritePlacesTitle">
+        <div class="section-heading">
+          <div><span class="hand-label">worth another trip</span><h2 id="favoritePlacesTitle">Favorite Place Suggestions</h2></div>
+        </div>
+        <div class="pinboard favorite-pinboard" id="favoritePlacesBoard"></div>
+      </section>
 
-      <section class="profile-feed-section" aria-labelledby="publishedFeedTitle">
-        <div class="section-heading compact-heading">
-          <div>
-            <span class="eyebrow">Your public shelf</span>
-            <h2 id="publishedFeedTitle">Published matchas</h2>
-            <p>These are the entries you chose to share with the community.</p>
-          </div>
-          <button class="soft-button" type="button" id="profileAddButton">＋ Log another</button>
+      <section class="place-section" aria-labelledby="avoidPlacesTitle">
+        <div class="section-heading">
+          <div><span class="hand-label">wait until something changes</span><h2 id="avoidPlacesTitle">Do Not Visit Suggestions</h2></div>
         </div>
-        <div class="entry-grid" id="profilePublishedGrid"></div>
-        <div class="empty-state small-empty" id="profilePublishedEmpty">
-          <div class="empty-icon" aria-hidden="true">💗</div>
-          <h3>Nothing published yet.</h3>
-          <p>Your entries stay private unless you turn on “Publish to community” while logging one.</p>
+        <div class="pinboard caution-pinboard" id="avoidPlacesBoard"></div>
+      </section>
+
+      <section class="place-section" aria-labelledby="allPlacesTitle">
+        <div class="section-heading places-list-heading">
+          <div><span class="hand-label">the whole cafe trail</span><h2 id="allPlacesTitle">All Visited Places</h2></div>
+          <label class="search-field compact-search"><span class="sr-only">Search visited places</span><span aria-hidden="true">⌕</span><input id="placeFilterInput" type="search" placeholder="Search places" /></label>
         </div>
+        <div class="visited-place-list" id="allPlacesList"></div>
       </section>
     </section>
 
-    <section class="app-view" id="settingsView" hidden aria-labelledby="settingsTitle">
-      <div class="section-heading settings-heading">
+    <section class="app-view" id="mapView" data-view-panel="map" hidden aria-labelledby="mapTitle">
+      <div class="map-header scrapbook-sheet compact-sheet">
         <div>
-          <span class="eyebrow">Make it yours</span>
-          <h2 id="settingsTitle">Account & accessibility</h2>
-          <p>Your display preferences are saved on this device.</p>
+          <span class="hand-label">where my matcha trail goes</span>
+          <h1 id="mapTitle">My Matcha Map</h1>
+          <p>Your own visits appear first. More visits make a place pin more prominent.</p>
+        </div>
+        <div class="map-controls">
+          <label class="switch-row compact-switch">
+            <span><strong>Community layer</strong><small>Show public discoveries too</small></span>
+            <input id="communityLayerToggle" type="checkbox" />
+            <span class="switch-control" aria-hidden="true"></span>
+          </label>
+          <button class="secondary-button" id="centerMapButton" type="button"><span aria-hidden="true">⌖</span> Center on me</button>
         </div>
       </div>
-
-      <div class="settings-grid">
-        <section class="settings-card" aria-labelledby="appearanceTitle">
-          <div class="settings-card-heading">
-            <span class="settings-icon" aria-hidden="true">◐</span>
-            <div><h3 id="appearanceTitle">Appearance</h3><p>Choose the look that feels best.</p></div>
-          </div>
-
-          <div class="setting-group">
-            <span class="setting-label">Color theme</span>
-            <div class="segmented-control" role="group" aria-label="Color theme">
-              <button type="button" data-theme-option="system" aria-pressed="true">System</button>
-              <button type="button" data-theme-option="light" aria-pressed="false">Light</button>
-              <button type="button" data-theme-option="dark" aria-pressed="false">Dark</button>
-            </div>
-          </div>
-
-          <div class="setting-group">
-            <span class="setting-label">Text size</span>
-            <div class="segmented-control" role="group" aria-label="Text size">
-              <button type="button" data-text-size-option="normal" aria-pressed="true">Standard</button>
-              <button type="button" data-text-size-option="large" aria-pressed="false">Large</button>
-              <button type="button" data-text-size-option="xlarge" aria-pressed="false">Extra large</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="settings-card" aria-labelledby="accessibilityTitle">
-          <div class="settings-card-heading">
-            <span class="settings-icon" aria-hidden="true">A</span>
-            <div><h3 id="accessibilityTitle">Accessibility</h3><p>Adjust motion, contrast, type, and touch controls.</p></div>
-          </div>
-
-          <label class="settings-toggle">
-            <span><strong>High contrast</strong><small>Strengthens borders and text contrast.</small></span>
-            <input id="highContrastSetting" type="checkbox" />
-            <span class="toggle-control" aria-hidden="true"></span>
-          </label>
-          <label class="settings-toggle">
-            <span><strong>Reduce motion</strong><small>Turns off decorative movement and transitions.</small></span>
-            <input id="reduceMotionSetting" type="checkbox" />
-            <span class="toggle-control" aria-hidden="true"></span>
-          </label>
-          <label class="settings-toggle">
-            <span><strong>Readable font</strong><small>Uses wider, simpler letter shapes.</small></span>
-            <input id="readableFontSetting" type="checkbox" />
-            <span class="toggle-control" aria-hidden="true"></span>
-          </label>
-          <label class="settings-toggle">
-            <span><strong>Larger touch targets</strong><small>Makes buttons and controls easier to tap.</small></span>
-            <input id="largeTargetsSetting" type="checkbox" />
-            <span class="toggle-control" aria-hidden="true"></span>
-          </label>
-          <label class="settings-toggle">
-            <span><strong>Reduce visual clutter</strong><small>Hides decorative artwork and simplifies the layout.</small></span>
-            <input id="reduceClutterSetting" type="checkbox" />
-            <span class="toggle-control" aria-hidden="true"></span>
-          </label>
-        </section>
-
-        <section class="settings-card" aria-labelledby="helpTitle">
-          <div class="settings-card-heading">
-            <span class="settings-icon" aria-hidden="true">?</span>
-            <div><h3 id="helpTitle">Help & tour</h3><p>Revisit the guided introduction at any time.</p></div>
-          </div>
-          <div class="settings-actions">
-            <button class="soft-button" type="button" id="restartTourButton">Restart first-launch tour</button>
-            <button class="text-button" type="button" id="resetSettingsButton">Reset display settings</button>
-          </div>
-        </section>
-
-        <section class="settings-card" aria-labelledby="accountTitle">
-          <div class="settings-card-heading">
-            <span class="settings-icon" aria-hidden="true">♡</span>
-            <div><h3 id="accountTitle">Account</h3><p id="settingsAccountCopy">Browse as a guest or sign in with Google.</p></div>
-          </div>
-          <div class="settings-actions" id="settingsAccountActions">
-            <a class="primary-button" href="/auth/google"><span class="google-g" aria-hidden="true">G</span> Sign in with Google</a>
-          </div>
-        </section>
+      <div class="map-paper-frame">
+        <span class="tape tape-map-one" aria-hidden="true"></span>
+        <span class="tape tape-map-two" aria-hidden="true"></span>
+        <div id="personalMap" class="personal-map" aria-label="Map of strawberry matcha places you have visited"></div>
+        <div class="map-legend" aria-label="Map legend">
+          <span><i class="legend-pin personal"></i> Your places</span>
+          <span><i class="legend-pin community"></i> Community</span>
+        </div>
       </div>
+    </section>
+
+    <section class="app-view" id="profileView" data-view-panel="profile" hidden aria-labelledby="profileTitle">
+      <section class="profile-cover scrapbook-sheet">
+        <span class="tape tape-top-left" aria-hidden="true"></span>
+        <div class="profile-photo-wrap" id="profilePhotoWrap"><span aria-hidden="true">🍓</span></div>
+        <div class="profile-cover-copy">
+          <span class="hand-label">my strawberry matcha scrapbook</span>
+          <h1 id="profileTitle">Guest Matcha Fan</h1>
+          <p id="profileSubtitle">Sign in to keep your scrapbook, photos, defaults, and settings together across devices.</p>
+        </div>
+        <div class="profile-cover-actions">
+          <button class="icon-button settings-button" type="button" id="openSettingsButton" aria-label="Open settings" title="Settings">⚙</button>
+          <div id="profileAccountAction"><a class="primary-button" href="/auth/google"><span class="google-dot" aria-hidden="true">G</span> Sign in with Google</a></div>
+        </div>
+      </section>
+
+      <section class="favorite-place-feature" aria-labelledby="profileFavoriteTitle">
+        <div class="section-heading"><div><span class="hand-label">the current favorite</span><h2 id="profileFavoriteTitle">Favorite Place</h2></div></div>
+        <div id="favoritePlaceFeature"></div>
+      </section>
+
+      <section class="profile-stats" aria-label="Your matcha statistics">
+        <article class="stat-paper"><span>Total Matchas</span><strong id="profileTotalMatchas">0</strong><small>memories logged</small></article>
+        <article class="stat-paper"><span>Places Visited</span><strong id="profilePlacesVisited">0</strong><small>cafes in your trail</small></article>
+        <article class="stat-paper"><span>Average Rating</span><strong id="profileAverageRating">—</strong><small>strawberries</small></article>
+      </section>
+
+      <section class="achievement-section" aria-labelledby="achievementTitle">
+        <div class="section-heading achievement-heading">
+          <div><span class="hand-label">stickers collected along the way</span><h2 id="achievementTitle">Achievement Board</h2></div>
+          <strong id="achievementCount" class="board-count">0 / 25 earned</strong>
+        </div>
+        <div class="sticker-board" id="achievementBoard"></div>
+      </section>
+
+      <section class="draft-section" aria-labelledby="draftTitle">
+        <div class="section-heading"><div><span class="hand-label">unfinished notes</span><h2 id="draftTitle">Drafts</h2></div></div>
+        <div class="draft-list" id="draftList"></div>
+        <div class="empty-inline" id="draftEmpty">No unfinished matchas. Drafts will wait here quietly when you need them.</div>
+      </section>
+
+      <section class="published-section" aria-labelledby="publishedTitle">
+        <div class="section-heading">
+          <div><span class="hand-label">shared from my scrapbook</span><h2 id="publishedTitle">Published Matchas</h2></div>
+        </div>
+        <div class="published-grid" id="publishedGrid"></div>
+        <div class="empty-inline" id="publishedEmpty">Nothing published yet. Every new matcha stays private until you decide to share it.</div>
+      </section>
     </section>
   </main>
 
-  <nav class="mobile-nav" aria-label="Mobile navigation">
-    <button class="mobile-nav-item is-active" type="button" data-view="collection" aria-current="page">
-      <span aria-hidden="true">🍓</span><small>Home</small>
-    </button>
-    <button class="mobile-nav-item" type="button" data-view="map">
-      <span aria-hidden="true">⌖</span><small>Map</small>
-    </button>
-    <button class="mobile-add-button" type="button" id="mobileAddButton" aria-label="Log a matcha">
-      <span aria-hidden="true">＋</span><small>Add</small>
-    </button>
-    <button class="mobile-nav-item" type="button" data-view="profile">
-      <span aria-hidden="true">♡</span><small>Profile</small>
-    </button>
-    <button class="mobile-nav-item" type="button" data-view="settings">
-      <span aria-hidden="true">⚙</span><small>Settings</small>
-    </button>
+  <nav class="mobile-nav" aria-label="Primary mobile navigation">
+    <button class="mobile-nav-item is-active" type="button" data-view="home" aria-current="page"><span aria-hidden="true">⌂</span><small>Home</small></button>
+    <button class="mobile-nav-item" type="button" data-view="places"><span aria-hidden="true">♡</span><small>Places</small></button>
+    <button class="mobile-log-button" type="button" data-log-matcha aria-label="Log a matcha"><span aria-hidden="true">📷</span><small>Log</small></button>
+    <button class="mobile-nav-item" type="button" data-view="map"><span aria-hidden="true">⌖</span><small>Map</small></button>
+    <button class="mobile-nav-item" type="button" data-view="profile"><span aria-hidden="true">☺</span><small>Profile</small></button>
   </nav>
 
-  <dialog class="matcha-dialog" id="entryDialog" aria-labelledby="entryDialogTitle">
-    <form class="dialog-card" id="entryForm" novalidate>
-      <div class="dialog-header">
-        <div>
-          <span class="eyebrow" id="entryStepLabel">Step 1 of 3</span>
-          <h2 id="entryDialogTitle">Snap it & save the spot</h2>
-          <p id="entryStepHelp">Take a fresh photo or choose one you already have.</p>
+  <dialog class="app-dialog capture-dialog" id="captureDialog" aria-labelledby="captureTitle">
+    <div class="dialog-paper capture-paper">
+      <button class="dialog-close" type="button" id="closeCaptureButton" aria-label="Close photo capture">×</button>
+
+      <section id="captureStartPanel" class="capture-start-panel">
+        <span class="dialog-sticker" aria-hidden="true">📷</span>
+        <span class="hand-label">start with the moment</span>
+        <h2 id="captureTitle">Add a matcha photo</h2>
+        <p>The camera should open automatically. You can also choose a photo you already took.</p>
+        <div class="capture-choice-grid">
+          <button class="primary-button tall-button" type="button" id="openCameraButton"><span aria-hidden="true">📷</span> Open Camera</button>
+          <button class="secondary-button tall-button" type="button" id="openLibraryButton"><span aria-hidden="true">▧</span> Camera Roll</button>
         </div>
-        <button class="close-button" type="button" id="closeEntryDialog" aria-label="Close matcha form">×</button>
-      </div>
-      <div class="entry-progress" aria-hidden="true"><span id="entryProgressBar"></span></div>
+      </section>
 
-      <div class="form-scroll">
-        <section class="entry-step is-active" data-entry-step="1">
-          <section class="form-section upload-section">
-            <div class="photo-preview-card" id="photoPreviewCard">
-              <img id="photoPreview" alt="Selected strawberry matcha preview" hidden />
-              <div class="photo-placeholder" id="photoPlaceholder">
-                <span class="photo-icon" aria-hidden="true">🍓</span>
-                <strong>Add your matcha photo</strong>
-                <small>We can check the image for location data.</small>
-              </div>
-              <button class="remove-photo-button" type="button" id="removePhotoButton" hidden aria-label="Remove selected photo">×</button>
-            </div>
-
-            <div class="photo-capture-grid">
-              <button class="capture-button camera-capture" type="button" id="takePhotoButton">
-                <span class="capture-icon" aria-hidden="true">📷</span>
-                <span><strong>Take a photo</strong><small>Open your phone camera</small></span>
-              </button>
-              <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden />
-              <button class="capture-button" type="button" id="choosePhotoButton">
-                <span class="capture-icon" aria-hidden="true">▧</span>
-                <span><strong>Camera roll</strong><small>Choose an existing photo</small></span>
-              </button>
-              <input id="libraryInput" type="file" accept="image/*" hidden />
-            </div>
-            <div class="photo-status" id="photoStatus" aria-live="polite"></div>
-          </section>
-
-          <section class="form-section location-section">
-            <div class="field-title-row">
-              <div>
-                <label class="field-label" for="placeName">Where did you get it?</label>
-                <small class="field-help">Cafe name is the only required item on this step.</small>
-              </div>
-              <span class="location-source-badge" id="locationSourceBadge">No location yet</span>
-            </div>
-            <input class="text-input" id="placeName" name="placeName" type="text" maxlength="160" autocomplete="organization" placeholder="Cafe or shop name" required />
-            <input class="text-input" id="locationLabel" name="locationLabel" type="text" maxlength="400" autocomplete="street-address" placeholder="Address or neighborhood (optional)" />
-            <div class="location-actions">
-              <button class="mini-action" type="button" id="currentLocationButton">⌖ Use current location</button>
-              <button class="mini-action" type="button" id="searchLocationButton" aria-expanded="false">⌕ Search a place</button>
-              <button class="mini-action" type="button" id="togglePinMapButton" aria-expanded="false">⌖ Drop a pin</button>
-            </div>
-            <div class="location-search" id="locationSearchPanel" hidden>
-              <div class="search-inline">
-                <input class="text-input" id="locationSearchInput" type="search" placeholder="Search a cafe, street, or city" />
-                <button class="soft-button compact" type="button" id="runLocationSearch">Search</button>
-              </div>
-              <div class="search-results" id="locationSearchResults"></div>
-            </div>
-            <div id="pinMap" class="pin-map" hidden aria-label="Drop a pin for this matcha"></div>
-            <input id="latitude" name="latitude" type="hidden" />
-            <input id="longitude" name="longitude" type="hidden" />
-            <input id="locationSource" name="locationSource" type="hidden" />
-          </section>
-        </section>
-
-        <section class="entry-step" data-entry-step="2" hidden>
-          <section class="form-section rating-grid">
-            <div class="rating-block">
-              <div class="rating-heading">
-                <label class="field-label">How was the matcha?</label>
-                <button class="help-dot" type="button" title="Rate flavor, strawberry balance, texture, and overall taste." aria-label="About matcha rating">i</button>
-              </div>
-              <div class="star-rating" id="starRating" role="radiogroup" aria-label="Matcha rating from 1 to 5"></div>
-              <small id="starRatingLabel" class="rating-caption">Tap a star</small>
-              <input id="ratingValue" name="rating" type="hidden" />
-            </div>
-
-            <div class="rating-block">
-              <div class="rating-heading">
-                <label class="field-label">How was the vibe?</label>
-                <button class="help-dot" type="button" title="Think atmosphere, comfort, music, staff, and whether you wanted to stay." aria-label="About vibe rating">i</button>
-              </div>
-              <div class="vibe-rating" id="vibeRating" role="radiogroup" aria-label="Vibe rating from 1 to 5"></div>
-              <small id="vibeRatingLabel" class="rating-caption">Tap the vibe</small>
-              <input id="vibeValue" name="vibe" type="hidden" />
-            </div>
-          </section>
-
-          <section class="form-section quick-choice-section">
-            <label class="toggle-row prominent-toggle">
-              <span><strong>Would you order it again?</strong><small>A fast yes/no for future-you.</small></span>
-              <input id="orderAgain" name="orderAgain" type="checkbox" />
-              <span class="toggle-control" aria-hidden="true"></span>
-            </label>
-          </section>
-
-          <div class="quick-save-callout">
-            <span aria-hidden="true">⚡</span>
-            <div><strong>That’s enough for a quick log.</strong><p>Save now, or continue for price, milk, sweetness, notes, and publishing.</p></div>
-          </div>
-        </section>
-
-        <section class="entry-step" data-entry-step="3" hidden>
-          <section class="form-section optional-heading">
-            <span class="optional-pill">Optional details</span>
-            <h3>Add anything you’ll want to remember</h3>
-            <p>Skip anything you do not know. None of these fields are required.</p>
-          </section>
-
-          <section class="form-section detail-grid">
-            <label class="field-group">
-              <span class="field-label">Price</span>
-              <div class="money-input"><span>$</span><input id="price" name="price" inputmode="decimal" placeholder="6.50" /></div>
-            </label>
-            <label class="field-group">
-              <span class="field-label">Drink size</span>
-              <select class="text-input" id="drinkSize" name="drinkSize">
-                <option value="">Choose</option>
-                <option>Small</option><option>Medium</option><option>Large</option><option>One size</option>
-              </select>
-            </label>
-            <label class="field-group">
-              <span class="field-label">Milk</span>
-              <select class="text-input" id="milkType" name="milkType">
-                <option value="">Choose</option>
-                <option>Whole milk</option><option>2% milk</option><option>Oat milk</option><option>Almond milk</option><option>Soy milk</option><option>Coconut milk</option><option>Other</option>
-              </select>
-            </label>
-            <label class="field-group">
-              <span class="field-label">Sweetness</span>
-              <select class="text-input" id="sweetness" name="sweetness">
-                <option value="">Choose</option>
-                <option>Unsweetened</option><option>25%</option><option>50%</option><option>75%</option><option>100%</option><option>Extra sweet</option>
-              </select>
-            </label>
-            <label class="field-group">
-              <span class="field-label">Visit date</span>
-              <input class="text-input" id="visitDate" name="visitDate" type="date" />
-            </label>
-            <label class="field-group">
-              <span class="field-label">Wait time</span>
-              <div class="suffix-input"><input id="waitTime" name="waitTime" type="number" min="0" max="180" inputmode="numeric" placeholder="8" /><span>min</span></div>
-            </label>
-          </section>
-
-          <section class="form-section">
-            <label class="field-group">
-              <span class="field-label">Special add-ons</span>
-              <input class="text-input" id="addOns" name="addOns" type="text" maxlength="400" placeholder="Cold foam, extra strawberry, vanilla…" />
-              <small class="field-help">Separate multiple add-ons with commas.</small>
-            </label>
-            <label class="field-group notes-field">
-              <span class="field-label">Notes</span>
-              <textarea class="text-input" id="notes" name="notes" rows="3" maxlength="500" placeholder="What made this one memorable?"></textarea>
-            </label>
-          </section>
-
-          <section class="form-section toggle-section">
-            <label class="toggle-row publish-toggle">
-              <span><strong>Publish to the community</strong><small>Off by default. Turn it on to add this entry to your public profile feed and the community map.</small></span>
-              <input id="shareCommunity" name="shareCommunity" type="checkbox" />
-              <span class="toggle-control" aria-hidden="true"></span>
-            </label>
-          </section>
-        </section>
-      </div>
-
-      <div class="dialog-footer">
-        <button class="text-button footer-back" type="button" id="entryBackButton" hidden>Back</button>
-        <span class="save-note" id="saveNote">Your entry stays private unless you publish it.</span>
-        <div class="footer-actions">
-          <button class="soft-button" type="button" id="entryQuickSaveButton" hidden>Save quick log</button>
-          <button class="primary-button" type="button" id="entryNextButton">Next: rate it</button>
-          <button class="primary-button" type="submit" id="saveEntryButton" hidden>Save matcha</button>
+      <section id="captureReviewPanel" class="capture-review-panel" hidden>
+        <span class="hand-label">does this one belong in the scrapbook?</span>
+        <h2>Keep this photo?</h2>
+        <div class="capture-photo-frame"><img id="capturePhotoPreview" alt="New strawberry matcha photo preview" /></div>
+        <div class="capture-review-actions">
+          <button class="secondary-button" type="button" id="retakePhotoButton">Retake</button>
+          <button class="secondary-button" type="button" id="chooseDifferentPhotoButton">Camera Roll</button>
+          <button class="primary-button" type="button" id="usePhotoButton">Use Photo <span aria-hidden="true">→</span></button>
         </div>
-      </div>
-    </form>
+      </section>
+
+      <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden />
+      <input id="libraryInput" type="file" accept="image/*" hidden />
+    </div>
   </dialog>
 
-  <dialog class="tour-dialog" id="tourDialog" aria-labelledby="tourTitle">
-    <div class="tour-card">
-      <div class="tour-topline">
-        <button class="text-button" type="button" id="tourSkip">Skip tour</button>
-        <button class="close-button tour-close" type="button" id="closeTour" aria-label="Close tour">×</button>
-      </div>
-      <div class="tour-illustration" id="tourIllustration" aria-hidden="true">🍓</div>
-      <span class="eyebrow" id="tourStepLabel">Step 1 of 5</span>
-      <h2 id="tourTitle">Welcome to your matcha diary</h2>
-      <p id="tourBody">Keep every strawberry matcha, cafe, rating, and memory in one place.</p>
-      <div class="tour-dots" id="tourDots" aria-label="Tour progress"></div>
-      <div class="tour-actions">
-        <button class="soft-button" type="button" id="tourBack">Back</button>
-        <button class="primary-button" type="button" id="tourNext">Next</button>
+  <dialog class="app-dialog log-dialog" id="logDialog" aria-labelledby="logDialogTitle">
+    <div class="dialog-paper log-paper">
+      <button class="dialog-close" type="button" id="closeLogButton" aria-label="Save draft and close">×</button>
+      <div class="log-progress" aria-label="Logging progress"><span id="logProgressFill"></span></div>
+
+      <section class="log-step is-active" id="placeStep" data-log-step="place">
+        <div class="log-photo-mini"><img id="logPhotoPreview" alt="Photo being logged" /></div>
+        <span class="hand-label">one quick confirmation</span>
+        <h2 id="logDialogTitle">Where did you get it?</h2>
+        <p class="step-copy">We’ll make our best guess from the photo or your current location. You can always correct it.</p>
+
+        <div class="place-detect-card" id="placeDetectCard">
+          <span class="detect-spinner" aria-hidden="true"></span>
+          <div><strong id="placeDetectTitle">Finding the most likely place…</strong><small id="placeDetectDetail">Checking location information</small></div>
+        </div>
+
+        <div class="place-suggestion" id="placeSuggestion" hidden>
+          <span class="suggestion-pin" aria-hidden="true">⌖</span>
+          <div class="suggestion-copy"><small>Looks like you’re at</small><strong id="suggestedPlaceName">Suggested place</strong><span id="suggestedPlaceAddress"></span></div>
+          <button class="primary-button full-button" type="button" id="useSuggestedPlaceButton">Use this place</button>
+          <button class="text-button" type="button" id="chooseAnotherPlaceButton">Choose another</button>
+        </div>
+
+        <div class="place-manual-panel" id="placeManualPanel" hidden>
+          <label class="field-group"><span>Place name</span><input class="text-input" id="manualPlaceName" type="text" maxlength="160" autocomplete="organization" placeholder="Cafe or shop" /></label>
+          <label class="search-field"><span aria-hidden="true">⌕</span><input id="placeSearchInput" type="search" placeholder="Search nearby places or an address" /><button type="button" id="runPlaceSearchButton">Search</button></label>
+          <div class="place-search-results" id="placeSearchResults"></div>
+          <button class="secondary-button full-button" type="button" id="useManualPlaceButton">Use this place</button>
+          <button class="text-button" type="button" id="dropPinButton" aria-expanded="false">Or drop a pin on the map</button>
+          <div id="placePinMap" class="place-pin-map" hidden aria-label="Map for choosing the matcha place"></div>
+        </div>
+      </section>
+
+      <section class="log-step" id="ratingStep" data-log-step="rating" hidden>
+        <button class="back-link" type="button" id="backToPlaceButton"><span aria-hidden="true">←</span> Change place</button>
+        <div class="rating-place-summary">
+          <div class="log-photo-mini"><img id="ratingPhotoPreview" alt="Photo being rated" /></div>
+          <div><span class="hand-label">rating this memory</span><strong id="ratingPlaceName">Your place</strong></div>
+        </div>
+        <h2>How was the matcha?</h2>
+        <p class="step-copy">Tap the number of strawberries it earned. This is the only rating needed to finish the log.</p>
+        <div class="strawberry-rating" id="strawberryRating" role="radiogroup" aria-label="Strawberry rating from 1 to 5"></div>
+        <div class="rating-word" id="ratingWord" aria-live="polite">Tap a strawberry</div>
+        <button class="primary-button log-submit-button" type="button" id="logMatchaSubmitButton" disabled>Log Matcha</button>
+        <button class="text-button" type="button" id="saveDraftFromRatingButton">Save as draft for later</button>
+      </section>
+    </div>
+  </dialog>
+
+  <dialog class="app-dialog success-dialog" id="successDialog" aria-labelledby="successTitle">
+    <div class="dialog-paper success-paper">
+      <div class="success-sticker" aria-hidden="true">🍓</div>
+      <span class="hand-label">page added</span>
+      <h2 id="successTitle">Matcha logged!</h2>
+      <p id="successSummary">Your new memory is at the front of the scrapbook.</p>
+      <div class="success-actions">
+        <button class="primary-button" type="button" id="successViewButton">View Matcha</button>
+        <button class="secondary-button" type="button" id="successDetailsButton">Add More Details</button>
+        <button class="text-button" type="button" id="successDoneButton">Done</button>
       </div>
     </div>
   </dialog>
 
+  <dialog class="app-dialog memory-dialog" id="memoryDialog" aria-labelledby="memoryDialogTitle">
+    <div class="dialog-paper memory-dialog-paper">
+      <button class="dialog-close" type="button" id="closeMemoryDialog" aria-label="Close matcha memory">×</button>
+      <div id="memoryDialogContent"></div>
+    </div>
+  </dialog>
+
+  <dialog class="app-dialog place-dialog" id="placeDialog" aria-labelledby="placeDialogTitle">
+    <div class="dialog-paper place-dialog-paper">
+      <button class="dialog-close" type="button" id="closePlaceDialog" aria-label="Close place details">×</button>
+      <div id="placeDialogContent"></div>
+    </div>
+  </dialog>
+
+  <dialog class="app-dialog settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+    <form class="dialog-paper settings-paper" id="settingsForm">
+      <div class="settings-dialog-header">
+        <div><span class="hand-label">make the scrapbook yours</span><h2 id="settingsTitle">Settings</h2></div>
+        <button class="dialog-close static-close" type="button" id="closeSettingsButton" aria-label="Close settings">×</button>
+      </div>
+
+      <div class="settings-scroll">
+        <section class="settings-section" aria-labelledby="accountSettingsTitle">
+          <h3 id="accountSettingsTitle">Account</h3>
+          <div id="settingsAccountPanel" class="setting-paper-row"></div>
+        </section>
+
+        <section class="settings-section" aria-labelledby="defaultSettingsTitle">
+          <h3 id="defaultSettingsTitle">Matcha Defaults</h3>
+          <p class="settings-help">These fill optional details silently. You can change them on any individual memory.</p>
+          <div class="settings-field-grid">
+            <label class="field-group"><span>Default milk</span><select class="text-input" id="defaultMilk"><option value="">No default</option><option>Whole milk</option><option>2% milk</option><option>Oat milk</option><option>Almond milk</option><option>Soy milk</option><option>Coconut milk</option><option>Other</option></select></label>
+            <label class="field-group"><span>Default sweetness</span><select class="text-input" id="defaultSweetness"><option value="">No default</option><option>Unsweetened</option><option>25%</option><option>50%</option><option>75%</option><option>100%</option><option>Extra sweet</option></select></label>
+            <label class="field-group"><span>Default size</span><select class="text-input" id="defaultSize"><option value="">No default</option><option>Small</option><option>Medium</option><option>Large</option><option>One size</option></select></label>
+            <label class="field-group"><span>Common add-ons</span><input class="text-input" id="defaultAddOns" type="text" maxlength="400" placeholder="Cold foam, extra strawberry" /></label>
+          </div>
+        </section>
+
+        <section class="settings-section" aria-labelledby="appearanceSettingsTitle">
+          <h3 id="appearanceSettingsTitle">Appearance</h3>
+          <div class="setting-paper-row stack-row">
+            <div><strong>Color theme</strong><small>Light is the default. Dark is a nighttime berry scrapbook.</small></div>
+            <div class="segmented-control" role="group" aria-label="Color theme">
+              <button type="button" data-theme-option="light" aria-pressed="true">Light</button>
+              <button type="button" data-theme-option="dark" aria-pressed="false">Dark</button>
+              <button type="button" data-theme-option="system" aria-pressed="false">System</button>
+            </div>
+          </div>
+          <div class="setting-paper-row stack-row">
+            <div><strong>Text size</strong><small>Make every page comfortable to read.</small></div>
+            <div class="segmented-control" role="group" aria-label="Text size">
+              <button type="button" data-text-option="normal" aria-pressed="true">Standard</button>
+              <button type="button" data-text-option="large" aria-pressed="false">Large</button>
+              <button type="button" data-text-option="xlarge" aria-pressed="false">Extra large</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section" aria-labelledby="accessibilitySettingsTitle">
+          <h3 id="accessibilitySettingsTitle">Accessibility</h3>
+          <label class="switch-row"><span><strong>High contrast</strong><small>Strengthen text, borders, and controls.</small></span><input id="highContrastSetting" type="checkbox" /><span class="switch-control" aria-hidden="true"></span></label>
+          <label class="switch-row"><span><strong>Reduce motion</strong><small>Replace lifts, slides, and bounces with simple changes.</small></span><input id="reduceMotionSetting" type="checkbox" /><span class="switch-control" aria-hidden="true"></span></label>
+          <label class="switch-row"><span><strong>Readable font</strong><small>Use a plainer typeface for all functional text.</small></span><input id="readableFontSetting" type="checkbox" /><span class="switch-control" aria-hidden="true"></span></label>
+          <label class="switch-row"><span><strong>Larger touch targets</strong><small>Give buttons and controls more room to tap.</small></span><input id="largeTargetsSetting" type="checkbox" /><span class="switch-control" aria-hidden="true"></span></label>
+          <label class="switch-row"><span><strong>Reduce visual clutter</strong><small>Hide tape, doodles, and decorative angles.</small></span><input id="reduceClutterSetting" type="checkbox" /><span class="switch-control" aria-hidden="true"></span></label>
+        </section>
+
+        <section class="settings-section" aria-labelledby="privacySettingsTitle">
+          <h3 id="privacySettingsTitle">Privacy & Community</h3>
+          <div class="setting-paper-row"><div><strong>Private by default</strong><small>Every matcha starts personal. Sharing is a separate choice and only shares photo, place, and rating.</small></div><span class="locked-setting">Always on</span></div>
+        </section>
+
+        <section class="settings-section" aria-labelledby="appSettingsTitle">
+          <h3 id="appSettingsTitle">App & Tour</h3>
+          <div class="settings-action-row">
+            <button class="secondary-button" type="button" id="restartTourButton">Restart first-launch tour</button>
+            <button class="text-button danger-text" type="button" id="resetDisplaySettingsButton">Reset display settings</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="settings-footer"><button class="primary-button full-button" type="submit">Save Settings</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog tour-dialog" id="tourDialog" aria-labelledby="tourTitle">
+    <div class="dialog-paper tour-paper">
+      <button class="dialog-close" type="button" id="closeTourButton" aria-label="Close tour">×</button>
+      <div class="tour-art" id="tourArt" aria-hidden="true">🍓</div>
+      <span class="hand-label" id="tourStepLabel">page 1 of 5</span>
+      <h2 id="tourTitle">Welcome to your scrapbook</h2>
+      <p id="tourBody"></p>
+      <div class="tour-dots" id="tourDots" aria-label="Tour progress"></div>
+      <div class="tour-actions">
+        <button class="text-button" type="button" id="tourSkipButton">Skip</button>
+        <button class="secondary-button" type="button" id="tourBackButton">Back</button>
+        <button class="primary-button" type="button" id="tourNextButton">Next</button>
+      </div>
+    </div>
+  </dialog>
+
+  <input id="editLibraryInput" type="file" accept="image/*" hidden />
+  <input id="editCameraInput" type="file" accept="image/*" capture="environment" hidden />
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="sr-only" id="liveRegion" aria-live="polite"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://unpkg.com/exifr@7.1.3/dist/lite.umd.js"></script>
