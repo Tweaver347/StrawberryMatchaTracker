@@ -1,306 +1,494 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light" data-text-size="normal">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#fff5f7" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f45f86" />
   <meta name="description" content="Track, rate, map, and remember every strawberry matcha." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Matcha Tracker" />
   <title>Strawberry Matcha Tracker</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <a class="skip-link" href="#mainContent">Skip to main content</a>
   <div class="berry-glow berry-glow-one" aria-hidden="true"></div>
   <div class="berry-glow berry-glow-two" aria-hidden="true"></div>
+  <div class="berry-dots" aria-hidden="true"></div>
 
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Strawberry Matcha Tracker home">
+    <button class="brand" type="button" data-view="collection" aria-label="Go to My matchas">
       <span class="brand-mark" aria-hidden="true">🍓</span>
       <span>
         <strong>Strawberry Matcha</strong>
         <small>tracker</small>
       </span>
-    </a>
+    </button>
 
     <nav class="topnav" aria-label="Primary navigation">
-      <button class="nav-pill is-active" type="button" data-view="collection">My matchas</button>
-      <button class="nav-pill" type="button" data-view="map">Community map</button>
+      <button class="nav-pill is-active" type="button" data-view="collection" aria-current="page">My matchas</button>
+      <button class="nav-pill" type="button" data-view="map">Map</button>
+      <button class="nav-pill" type="button" data-view="profile">Profile</button>
+      <button class="nav-pill" type="button" data-view="settings">Settings</button>
       <button class="nav-icon" type="button" id="tourButton" title="Take the app tour" aria-label="Take the app tour">?</button>
     </nav>
 
     <div class="account-area" id="accountArea">
-      <a class="google-button" id="googleButton" href="/auth/google">
+      <a class="google-button" href="/auth/google">
         <span class="google-g" aria-hidden="true">G</span>
         <span>Continue with Google</span>
       </a>
     </div>
   </header>
 
-  <main class="page-shell">
-    <section class="hero" aria-labelledby="heroTitle">
-      <div class="hero-copy">
-        <span class="eyebrow">Your sweetest little drink diary</span>
-        <h1 id="heroTitle">Remember every <span>strawberry matcha.</span></h1>
-        <p>Snap the drink, save the spot, rate the matcha and the vibe, then keep the ones worth ordering again.</p>
-        <div class="hero-actions">
-          <button class="primary-button" type="button" id="addMatchaButton">
-            <span aria-hidden="true">＋</span> Add a matcha
-          </button>
-          <button class="soft-button" type="button" id="useLocationHeroButton">
-            <span aria-hidden="true">⌖</span> Find me on the map
-          </button>
+  <main class="page-shell" id="mainContent" tabindex="-1">
+    <section class="app-view" id="collectionView" aria-labelledby="heroTitle">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">Your sweetest little drink diary</span>
+          <h1 id="heroTitle">Remember every <span>strawberry matcha.</span></h1>
+          <p>Take a photo, save the cafe, rate the matcha and the vibe, then keep the ones worth ordering again.</p>
+          <div class="hero-actions">
+            <button class="primary-button" type="button" id="addMatchaButton">
+              <span aria-hidden="true">＋</span> Log a matcha
+            </button>
+            <button class="soft-button" type="button" id="useLocationHeroButton">
+              <span aria-hidden="true">⌖</span> Explore the map
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="hero-card" aria-label="Rating preview">
-        <div class="layered-drink" aria-hidden="true">
-          <div class="drink-foam"></div>
-          <div class="drink-strawberry"></div>
-          <div class="drink-matcha"></div>
-          <span class="drink-berry">🍓</span>
+        <div class="hero-card" aria-label="Decorative strawberry matcha rating preview">
+          <div class="layered-drink" aria-hidden="true">
+            <div class="drink-foam"></div>
+            <div class="drink-strawberry"></div>
+            <div class="drink-matcha"></div>
+            <span class="drink-berry">🍓</span>
+          </div>
+          <div class="hero-rating-copy">
+            <span class="tiny-label">Today’s mission</span>
+            <strong>Find a five-star pour</strong>
+            <div class="preview-stars" aria-label="Five decorative stars">★★★★★</div>
+            <small>Good matcha. Good berries. Good vibes.</small>
+          </div>
         </div>
-        <div class="hero-rating-copy">
-          <span class="tiny-label">Today’s mission</span>
-          <strong>Find a five-star pour</strong>
-          <div class="preview-stars" aria-label="Five decorative stars">★★★★★</div>
-          <small>Good matcha. Good berries. Good vibes.</small>
+      </section>
+
+      <section class="collection-section" aria-labelledby="collectionTitle">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Your collection</span>
+            <h2 id="collectionTitle">Matchas worth remembering</h2>
+          </div>
+          <div class="filter-row" role="group" aria-label="Entry filters">
+            <button class="filter-chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+            <button class="filter-chip" type="button" data-filter="favorites" aria-pressed="false">Favorites</button>
+            <button class="filter-chip" type="button" data-filter="shared" aria-pressed="false">Published</button>
+          </div>
         </div>
-      </div>
+
+        <div class="stats-grid" aria-label="Matcha statistics">
+          <article class="stat-card">
+            <span>Logged</span>
+            <strong id="loggedCount">0</strong>
+            <small>matchas</small>
+          </article>
+          <article class="stat-card">
+            <span>Average</span>
+            <strong id="averageRating">—</strong>
+            <small>stars</small>
+          </article>
+          <article class="stat-card">
+            <span>Favorites</span>
+            <strong id="favoriteCount">0</strong>
+            <small>saved</small>
+          </article>
+          <article class="stat-card strawberry-stat">
+            <span>Would order again</span>
+            <strong id="orderAgainPercent">—</strong>
+            <small>of your drinks</small>
+          </article>
+        </div>
+
+        <div class="entry-grid" id="entryGrid"></div>
+
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon" aria-hidden="true">🍵</div>
+          <h3>Your first matcha is waiting.</h3>
+          <p>Take a photo or choose one from your camera roll, add a quick rating, and start your collection.</p>
+          <button class="primary-button" type="button" id="emptyAddButton">Log my first matcha</button>
+        </div>
+      </section>
     </section>
 
-    <section class="view-section" id="collectionView">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">Your collection</span>
-          <h2>Matchas worth remembering</h2>
-        </div>
-        <div class="filter-row" role="group" aria-label="Entry filters">
-          <button class="filter-chip is-active" type="button" data-filter="all">All</button>
-          <button class="filter-chip" type="button" data-filter="favorites">Favorites</button>
-          <button class="filter-chip" type="button" data-filter="shared">Shared</button>
-        </div>
-      </div>
-
-      <div class="sync-banner" id="syncBanner" hidden>
-        <span aria-hidden="true">☁</span>
-        <div>
-          <strong>Local preview mode</strong>
-          <p>Your entries are saved on this device while the cloud database is being connected.</p>
-        </div>
-      </div>
-
-      <div class="stats-grid" aria-label="Matcha statistics">
-        <article class="stat-card">
-          <span>Logged</span>
-          <strong id="loggedCount">0</strong>
-          <small>matchas</small>
-        </article>
-        <article class="stat-card">
-          <span>Average</span>
-          <strong id="averageRating">—</strong>
-          <small>stars</small>
-        </article>
-        <article class="stat-card">
-          <span>Favorites</span>
-          <strong id="favoriteCount">0</strong>
-          <small>saved</small>
-        </article>
-        <article class="stat-card strawberry-stat">
-          <span>Would order again</span>
-          <strong id="orderAgainPercent">—</strong>
-          <small>of your drinks</small>
-        </article>
-      </div>
-
-      <div class="entry-grid" id="entryGrid"></div>
-
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon" aria-hidden="true">🍵</div>
-        <h3>Your first matcha is waiting.</h3>
-        <p>Add a photo or location and start building your personal strawberry matcha map.</p>
-        <button class="primary-button" type="button" id="emptyAddButton">Add my first matcha</button>
-      </div>
-    </section>
-
-    <section class="view-section" id="mapView" hidden>
+    <section class="app-view" id="mapView" hidden aria-labelledby="mapTitle">
       <div class="section-heading map-heading">
         <div>
           <span class="eyebrow">Community map</span>
-          <h2>Where the good matcha lives</h2>
-          <p>Only entries people choose to share appear here.</p>
+          <h2 id="mapTitle">Where the good matcha lives</h2>
+          <p>Only entries people choose to publish appear here.</p>
         </div>
         <button class="soft-button" type="button" id="mapLocateButton"><span aria-hidden="true">⌖</span> Center on me</button>
       </div>
       <div class="map-layout">
-        <div id="communityMap" class="community-map" aria-label="Map of shared strawberry matcha locations"></div>
-        <aside class="map-list-panel">
+        <div id="communityMap" class="community-map" aria-label="Map of published strawberry matcha locations"></div>
+        <aside class="map-list-panel" aria-label="Published matcha locations">
           <div class="map-list-heading">
-            <strong>Shared spots</strong>
+            <strong>Published spots</strong>
             <span id="communityCount">0 places</span>
           </div>
           <div id="communityList" class="community-list"></div>
         </aside>
       </div>
     </section>
-  </main>
 
-  <dialog class="matcha-dialog" id="entryDialog">
-    <form method="dialog" class="dialog-card" id="entryForm">
-      <div class="dialog-header">
-        <div>
-          <span class="eyebrow">New entry</span>
-          <h2>How was the matcha?</h2>
+    <section class="app-view" id="profileView" hidden aria-labelledby="profileViewTitle">
+      <div class="profile-hero-card">
+        <div class="profile-avatar-large" id="profileAvatarLarge" aria-hidden="true">🍓</div>
+        <div class="profile-hero-copy" id="profileIdentity">
+          <span class="eyebrow">Your profile</span>
+          <h2 id="profileViewTitle">Guest matcha fan</h2>
+          <p>Sign in to keep your collection tied to your account.</p>
         </div>
-        <button class="close-button" type="button" id="closeEntryDialog" aria-label="Close">×</button>
+        <div class="profile-hero-actions" id="profileHeroActions">
+          <a class="primary-button" href="/auth/google"><span class="google-g" aria-hidden="true">G</span> Sign in with Google</a>
+        </div>
       </div>
 
+      <div class="profile-stats-grid" aria-label="Profile statistics">
+        <article class="profile-stat"><span>Matchas logged</span><strong id="profileLoggedCount">0</strong></article>
+        <article class="profile-stat"><span>Average rating</span><strong id="profileAverageRating">—</strong></article>
+        <article class="profile-stat"><span>Favorites</span><strong id="profileFavoriteCount">0</strong></article>
+        <article class="profile-stat"><span>Published</span><strong id="profilePublishedCount">0</strong></article>
+      </div>
+
+      <section class="profile-feed-section" aria-labelledby="publishedFeedTitle">
+        <div class="section-heading compact-heading">
+          <div>
+            <span class="eyebrow">Your public shelf</span>
+            <h2 id="publishedFeedTitle">Published matchas</h2>
+            <p>These are the entries you chose to share with the community.</p>
+          </div>
+          <button class="soft-button" type="button" id="profileAddButton">＋ Log another</button>
+        </div>
+        <div class="entry-grid" id="profilePublishedGrid"></div>
+        <div class="empty-state small-empty" id="profilePublishedEmpty">
+          <div class="empty-icon" aria-hidden="true">💗</div>
+          <h3>Nothing published yet.</h3>
+          <p>Your entries stay private unless you turn on “Publish to community” while logging one.</p>
+        </div>
+      </section>
+    </section>
+
+    <section class="app-view" id="settingsView" hidden aria-labelledby="settingsTitle">
+      <div class="section-heading settings-heading">
+        <div>
+          <span class="eyebrow">Make it yours</span>
+          <h2 id="settingsTitle">Account & accessibility</h2>
+          <p>Your display preferences are saved on this device.</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <section class="settings-card" aria-labelledby="appearanceTitle">
+          <div class="settings-card-heading">
+            <span class="settings-icon" aria-hidden="true">◐</span>
+            <div><h3 id="appearanceTitle">Appearance</h3><p>Choose the look that feels best.</p></div>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-label">Color theme</span>
+            <div class="segmented-control" role="group" aria-label="Color theme">
+              <button type="button" data-theme-option="system" aria-pressed="true">System</button>
+              <button type="button" data-theme-option="light" aria-pressed="false">Light</button>
+              <button type="button" data-theme-option="dark" aria-pressed="false">Dark</button>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-label">Text size</span>
+            <div class="segmented-control" role="group" aria-label="Text size">
+              <button type="button" data-text-size-option="normal" aria-pressed="true">Standard</button>
+              <button type="button" data-text-size-option="large" aria-pressed="false">Large</button>
+              <button type="button" data-text-size-option="xlarge" aria-pressed="false">Extra large</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-card" aria-labelledby="accessibilityTitle">
+          <div class="settings-card-heading">
+            <span class="settings-icon" aria-hidden="true">A</span>
+            <div><h3 id="accessibilityTitle">Accessibility</h3><p>Adjust motion, contrast, type, and touch controls.</p></div>
+          </div>
+
+          <label class="settings-toggle">
+            <span><strong>High contrast</strong><small>Strengthens borders and text contrast.</small></span>
+            <input id="highContrastSetting" type="checkbox" />
+            <span class="toggle-control" aria-hidden="true"></span>
+          </label>
+          <label class="settings-toggle">
+            <span><strong>Reduce motion</strong><small>Turns off decorative movement and transitions.</small></span>
+            <input id="reduceMotionSetting" type="checkbox" />
+            <span class="toggle-control" aria-hidden="true"></span>
+          </label>
+          <label class="settings-toggle">
+            <span><strong>Readable font</strong><small>Uses wider, simpler letter shapes.</small></span>
+            <input id="readableFontSetting" type="checkbox" />
+            <span class="toggle-control" aria-hidden="true"></span>
+          </label>
+          <label class="settings-toggle">
+            <span><strong>Larger touch targets</strong><small>Makes buttons and controls easier to tap.</small></span>
+            <input id="largeTargetsSetting" type="checkbox" />
+            <span class="toggle-control" aria-hidden="true"></span>
+          </label>
+          <label class="settings-toggle">
+            <span><strong>Reduce visual clutter</strong><small>Hides decorative artwork and simplifies the layout.</small></span>
+            <input id="reduceClutterSetting" type="checkbox" />
+            <span class="toggle-control" aria-hidden="true"></span>
+          </label>
+        </section>
+
+        <section class="settings-card" aria-labelledby="helpTitle">
+          <div class="settings-card-heading">
+            <span class="settings-icon" aria-hidden="true">?</span>
+            <div><h3 id="helpTitle">Help & tour</h3><p>Revisit the guided introduction at any time.</p></div>
+          </div>
+          <div class="settings-actions">
+            <button class="soft-button" type="button" id="restartTourButton">Restart first-launch tour</button>
+            <button class="text-button" type="button" id="resetSettingsButton">Reset display settings</button>
+          </div>
+        </section>
+
+        <section class="settings-card" aria-labelledby="accountTitle">
+          <div class="settings-card-heading">
+            <span class="settings-icon" aria-hidden="true">♡</span>
+            <div><h3 id="accountTitle">Account</h3><p id="settingsAccountCopy">Browse as a guest or sign in with Google.</p></div>
+          </div>
+          <div class="settings-actions" id="settingsAccountActions">
+            <a class="primary-button" href="/auth/google"><span class="google-g" aria-hidden="true">G</span> Sign in with Google</a>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button class="mobile-nav-item is-active" type="button" data-view="collection" aria-current="page">
+      <span aria-hidden="true">🍓</span><small>Home</small>
+    </button>
+    <button class="mobile-nav-item" type="button" data-view="map">
+      <span aria-hidden="true">⌖</span><small>Map</small>
+    </button>
+    <button class="mobile-add-button" type="button" id="mobileAddButton" aria-label="Log a matcha">
+      <span aria-hidden="true">＋</span><small>Add</small>
+    </button>
+    <button class="mobile-nav-item" type="button" data-view="profile">
+      <span aria-hidden="true">♡</span><small>Profile</small>
+    </button>
+    <button class="mobile-nav-item" type="button" data-view="settings">
+      <span aria-hidden="true">⚙</span><small>Settings</small>
+    </button>
+  </nav>
+
+  <dialog class="matcha-dialog" id="entryDialog" aria-labelledby="entryDialogTitle">
+    <form class="dialog-card" id="entryForm" novalidate>
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow" id="entryStepLabel">Step 1 of 3</span>
+          <h2 id="entryDialogTitle">Snap it & save the spot</h2>
+          <p id="entryStepHelp">Take a fresh photo or choose one you already have.</p>
+        </div>
+        <button class="close-button" type="button" id="closeEntryDialog" aria-label="Close matcha form">×</button>
+      </div>
+      <div class="entry-progress" aria-hidden="true"><span id="entryProgressBar"></span></div>
+
       <div class="form-scroll">
-        <section class="form-section upload-section">
-          <label class="photo-drop" for="photoInput" id="photoDrop">
-            <input id="photoInput" type="file" accept="image/jpeg,image/heic,image/heif,image/png" />
-            <img id="photoPreview" alt="Selected strawberry matcha preview" hidden />
-            <span class="photo-placeholder" id="photoPlaceholder">
-              <span class="photo-icon" aria-hidden="true">＋</span>
-              <strong>Add a matcha photo</strong>
-              <small>We’ll look for GPS data in the image.</small>
-            </span>
-          </label>
-          <div class="photo-status" id="photoStatus" aria-live="polite"></div>
-        </section>
-
-        <section class="form-section">
-          <div class="field-title-row">
-            <div>
-              <label class="field-label" for="placeName">Where did you get it?</label>
-              <small class="field-help">Use your current location, photo GPS, search, or drop a pin.</small>
+        <section class="entry-step is-active" data-entry-step="1">
+          <section class="form-section upload-section">
+            <div class="photo-preview-card" id="photoPreviewCard">
+              <img id="photoPreview" alt="Selected strawberry matcha preview" hidden />
+              <div class="photo-placeholder" id="photoPlaceholder">
+                <span class="photo-icon" aria-hidden="true">🍓</span>
+                <strong>Add your matcha photo</strong>
+                <small>We can check the image for location data.</small>
+              </div>
+              <button class="remove-photo-button" type="button" id="removePhotoButton" hidden aria-label="Remove selected photo">×</button>
             </div>
-            <span class="location-source-badge" id="locationSourceBadge">No location yet</span>
-          </div>
-          <input class="text-input" id="placeName" name="placeName" type="text" placeholder="Cafe or shop name" required />
-          <input class="text-input" id="locationLabel" name="locationLabel" type="text" placeholder="Address or neighborhood" />
-          <div class="location-actions">
-            <button class="mini-action" type="button" id="currentLocationButton">⌖ Current location</button>
-            <button class="mini-action" type="button" id="searchLocationButton">⌕ Search place</button>
-            <button class="mini-action" type="button" id="togglePinMapButton">⌖ Drop a pin</button>
-          </div>
-          <div class="location-search" id="locationSearchPanel" hidden>
-            <div class="search-inline">
-              <input class="text-input" id="locationSearchInput" type="search" placeholder="Search a cafe, street, or city" />
-              <button class="soft-button compact" type="button" id="runLocationSearch">Search</button>
+
+            <div class="photo-capture-grid">
+              <button class="capture-button camera-capture" type="button" id="takePhotoButton">
+                <span class="capture-icon" aria-hidden="true">📷</span>
+                <span><strong>Take a photo</strong><small>Open your phone camera</small></span>
+              </button>
+              <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden />
+              <button class="capture-button" type="button" id="choosePhotoButton">
+                <span class="capture-icon" aria-hidden="true">▧</span>
+                <span><strong>Camera roll</strong><small>Choose an existing photo</small></span>
+              </button>
+              <input id="libraryInput" type="file" accept="image/*" hidden />
             </div>
-            <div class="search-results" id="locationSearchResults"></div>
-          </div>
-          <div id="pinMap" class="pin-map" hidden aria-label="Drop a pin for this matcha"></div>
-          <input id="latitude" name="latitude" type="hidden" />
-          <input id="longitude" name="longitude" type="hidden" />
-          <input id="locationSource" name="locationSource" type="hidden" />
-        </section>
+            <div class="photo-status" id="photoStatus" aria-live="polite"></div>
+          </section>
 
-        <section class="form-section rating-grid">
-          <div class="rating-block">
-            <div class="rating-heading">
-              <label class="field-label">Matcha rating</label>
-              <button class="help-dot" type="button" title="Rate the drink itself: matcha flavor, strawberry balance, texture, and overall taste." aria-label="About matcha rating">i</button>
+          <section class="form-section location-section">
+            <div class="field-title-row">
+              <div>
+                <label class="field-label" for="placeName">Where did you get it?</label>
+                <small class="field-help">Cafe name is the only required item on this step.</small>
+              </div>
+              <span class="location-source-badge" id="locationSourceBadge">No location yet</span>
             </div>
-            <div class="star-rating" id="starRating" role="radiogroup" aria-label="Matcha rating from 1 to 5"></div>
-            <small id="starRatingLabel" class="rating-caption">Tap a star</small>
-            <input id="ratingValue" name="rating" type="hidden" required />
-          </div>
-
-          <div class="rating-block">
-            <div class="rating-heading">
-              <label class="field-label">Vibe check</label>
-              <button class="help-dot" type="button" title="How did the place feel? Think atmosphere, comfort, music, staff, and whether you wanted to stay awhile." aria-label="About vibe rating">i</button>
+            <input class="text-input" id="placeName" name="placeName" type="text" maxlength="160" autocomplete="organization" placeholder="Cafe or shop name" required />
+            <input class="text-input" id="locationLabel" name="locationLabel" type="text" maxlength="400" autocomplete="street-address" placeholder="Address or neighborhood (optional)" />
+            <div class="location-actions">
+              <button class="mini-action" type="button" id="currentLocationButton">⌖ Use current location</button>
+              <button class="mini-action" type="button" id="searchLocationButton" aria-expanded="false">⌕ Search a place</button>
+              <button class="mini-action" type="button" id="togglePinMapButton" aria-expanded="false">⌖ Drop a pin</button>
             </div>
-            <div class="vibe-rating" id="vibeRating" role="radiogroup" aria-label="Vibe rating from 1 to 5"></div>
-            <small id="vibeRatingLabel" class="rating-caption">Tap the vibe</small>
-            <input id="vibeValue" name="vibe" type="hidden" required />
+            <div class="location-search" id="locationSearchPanel" hidden>
+              <div class="search-inline">
+                <input class="text-input" id="locationSearchInput" type="search" placeholder="Search a cafe, street, or city" />
+                <button class="soft-button compact" type="button" id="runLocationSearch">Search</button>
+              </div>
+              <div class="search-results" id="locationSearchResults"></div>
+            </div>
+            <div id="pinMap" class="pin-map" hidden aria-label="Drop a pin for this matcha"></div>
+            <input id="latitude" name="latitude" type="hidden" />
+            <input id="longitude" name="longitude" type="hidden" />
+            <input id="locationSource" name="locationSource" type="hidden" />
+          </section>
+        </section>
+
+        <section class="entry-step" data-entry-step="2" hidden>
+          <section class="form-section rating-grid">
+            <div class="rating-block">
+              <div class="rating-heading">
+                <label class="field-label">How was the matcha?</label>
+                <button class="help-dot" type="button" title="Rate flavor, strawberry balance, texture, and overall taste." aria-label="About matcha rating">i</button>
+              </div>
+              <div class="star-rating" id="starRating" role="radiogroup" aria-label="Matcha rating from 1 to 5"></div>
+              <small id="starRatingLabel" class="rating-caption">Tap a star</small>
+              <input id="ratingValue" name="rating" type="hidden" />
+            </div>
+
+            <div class="rating-block">
+              <div class="rating-heading">
+                <label class="field-label">How was the vibe?</label>
+                <button class="help-dot" type="button" title="Think atmosphere, comfort, music, staff, and whether you wanted to stay." aria-label="About vibe rating">i</button>
+              </div>
+              <div class="vibe-rating" id="vibeRating" role="radiogroup" aria-label="Vibe rating from 1 to 5"></div>
+              <small id="vibeRatingLabel" class="rating-caption">Tap the vibe</small>
+              <input id="vibeValue" name="vibe" type="hidden" />
+            </div>
+          </section>
+
+          <section class="form-section quick-choice-section">
+            <label class="toggle-row prominent-toggle">
+              <span><strong>Would you order it again?</strong><small>A fast yes/no for future-you.</small></span>
+              <input id="orderAgain" name="orderAgain" type="checkbox" />
+              <span class="toggle-control" aria-hidden="true"></span>
+            </label>
+          </section>
+
+          <div class="quick-save-callout">
+            <span aria-hidden="true">⚡</span>
+            <div><strong>That’s enough for a quick log.</strong><p>Save now, or continue for price, milk, sweetness, notes, and publishing.</p></div>
           </div>
         </section>
 
-        <section class="form-section detail-grid">
-          <label class="field-group">
-            <span class="field-label">Price</span>
-            <div class="money-input"><span>$</span><input id="price" name="price" inputmode="decimal" placeholder="6.50" /></div>
-          </label>
-          <label class="field-group">
-            <span class="field-label">Drink size</span>
-            <select class="text-input" id="drinkSize" name="drinkSize">
-              <option value="">Choose</option>
-              <option>Small</option><option>Medium</option><option>Large</option><option>One size</option>
-            </select>
-          </label>
-          <label class="field-group">
-            <span class="field-label">Milk</span>
-            <select class="text-input" id="milkType" name="milkType">
-              <option value="">Choose</option>
-              <option>Whole milk</option><option>2% milk</option><option>Oat milk</option><option>Almond milk</option><option>Soy milk</option><option>Coconut milk</option><option>Other</option>
-            </select>
-          </label>
-          <label class="field-group">
-            <span class="field-label">Sweetness</span>
-            <select class="text-input" id="sweetness" name="sweetness">
-              <option value="">Choose</option>
-              <option>Unsweetened</option><option>25%</option><option>50%</option><option>75%</option><option>100%</option><option>Extra sweet</option>
-            </select>
-          </label>
-          <label class="field-group">
-            <span class="field-label">Visit date</span>
-            <input class="text-input" id="visitDate" name="visitDate" type="date" />
-          </label>
-          <label class="field-group">
-            <span class="field-label">Wait time</span>
-            <div class="suffix-input"><input id="waitTime" name="waitTime" type="number" min="0" max="180" placeholder="8" /><span>min</span></div>
-          </label>
-        </section>
+        <section class="entry-step" data-entry-step="3" hidden>
+          <section class="form-section optional-heading">
+            <span class="optional-pill">Optional details</span>
+            <h3>Add anything you’ll want to remember</h3>
+            <p>Skip anything you do not know. None of these fields are required.</p>
+          </section>
 
-        <section class="form-section">
-          <label class="field-group">
-            <span class="field-label">Special add-ons</span>
-            <input class="text-input" id="addOns" name="addOns" type="text" placeholder="Cold foam, extra strawberry, vanilla…" />
-            <small class="field-help">Separate multiple add-ons with commas.</small>
-          </label>
-          <label class="field-group notes-field">
-            <span class="field-label">Notes</span>
-            <textarea class="text-input" id="notes" name="notes" rows="3" maxlength="500" placeholder="What made this one memorable?"></textarea>
-          </label>
-        </section>
+          <section class="form-section detail-grid">
+            <label class="field-group">
+              <span class="field-label">Price</span>
+              <div class="money-input"><span>$</span><input id="price" name="price" inputmode="decimal" placeholder="6.50" /></div>
+            </label>
+            <label class="field-group">
+              <span class="field-label">Drink size</span>
+              <select class="text-input" id="drinkSize" name="drinkSize">
+                <option value="">Choose</option>
+                <option>Small</option><option>Medium</option><option>Large</option><option>One size</option>
+              </select>
+            </label>
+            <label class="field-group">
+              <span class="field-label">Milk</span>
+              <select class="text-input" id="milkType" name="milkType">
+                <option value="">Choose</option>
+                <option>Whole milk</option><option>2% milk</option><option>Oat milk</option><option>Almond milk</option><option>Soy milk</option><option>Coconut milk</option><option>Other</option>
+              </select>
+            </label>
+            <label class="field-group">
+              <span class="field-label">Sweetness</span>
+              <select class="text-input" id="sweetness" name="sweetness">
+                <option value="">Choose</option>
+                <option>Unsweetened</option><option>25%</option><option>50%</option><option>75%</option><option>100%</option><option>Extra sweet</option>
+              </select>
+            </label>
+            <label class="field-group">
+              <span class="field-label">Visit date</span>
+              <input class="text-input" id="visitDate" name="visitDate" type="date" />
+            </label>
+            <label class="field-group">
+              <span class="field-label">Wait time</span>
+              <div class="suffix-input"><input id="waitTime" name="waitTime" type="number" min="0" max="180" inputmode="numeric" placeholder="8" /><span>min</span></div>
+            </label>
+          </section>
 
-        <section class="form-section toggle-section">
-          <label class="toggle-row">
-            <span>
-              <strong>Would order again</strong>
-              <small>Future-you will appreciate this.</small>
-            </span>
-            <input id="orderAgain" name="orderAgain" type="checkbox" />
-            <span class="toggle-control" aria-hidden="true"></span>
-          </label>
-          <label class="toggle-row">
-            <span>
-              <strong>Share with the community</strong>
-              <small>Your entry is private by default. Turn this on to put the spot on the community feed and map.</small>
-            </span>
-            <input id="shareCommunity" name="shareCommunity" type="checkbox" />
-            <span class="toggle-control" aria-hidden="true"></span>
-          </label>
+          <section class="form-section">
+            <label class="field-group">
+              <span class="field-label">Special add-ons</span>
+              <input class="text-input" id="addOns" name="addOns" type="text" maxlength="400" placeholder="Cold foam, extra strawberry, vanilla…" />
+              <small class="field-help">Separate multiple add-ons with commas.</small>
+            </label>
+            <label class="field-group notes-field">
+              <span class="field-label">Notes</span>
+              <textarea class="text-input" id="notes" name="notes" rows="3" maxlength="500" placeholder="What made this one memorable?"></textarea>
+            </label>
+          </section>
+
+          <section class="form-section toggle-section">
+            <label class="toggle-row publish-toggle">
+              <span><strong>Publish to the community</strong><small>Off by default. Turn it on to add this entry to your public profile feed and the community map.</small></span>
+              <input id="shareCommunity" name="shareCommunity" type="checkbox" />
+              <span class="toggle-control" aria-hidden="true"></span>
+            </label>
+          </section>
         </section>
       </div>
 
       <div class="dialog-footer">
-        <span class="save-note" id="saveNote">Private unless you choose to share.</span>
-        <button class="primary-button" type="submit" id="saveEntryButton">Save matcha</button>
+        <button class="text-button footer-back" type="button" id="entryBackButton" hidden>Back</button>
+        <span class="save-note" id="saveNote">Your entry stays private unless you publish it.</span>
+        <div class="footer-actions">
+          <button class="soft-button" type="button" id="entryQuickSaveButton" hidden>Save quick log</button>
+          <button class="primary-button" type="button" id="entryNextButton">Next: rate it</button>
+          <button class="primary-button" type="submit" id="saveEntryButton" hidden>Save matcha</button>
+        </div>
       </div>
     </form>
   </dialog>
 
-  <dialog class="tour-dialog" id="tourDialog">
+  <dialog class="tour-dialog" id="tourDialog" aria-labelledby="tourTitle">
     <div class="tour-card">
-      <button class="close-button tour-close" type="button" id="closeTour" aria-label="Close tour">×</button>
+      <div class="tour-topline">
+        <button class="text-button" type="button" id="tourSkip">Skip tour</button>
+        <button class="close-button tour-close" type="button" id="closeTour" aria-label="Close tour">×</button>
+      </div>
       <div class="tour-illustration" id="tourIllustration" aria-hidden="true">🍓</div>
-      <span class="eyebrow" id="tourStepLabel">Step 1 of 4</span>
-      <h2 id="tourTitle">Snap the matcha</h2>
-      <p id="tourBody">Upload a photo and we’ll check it for GPS information. You can also use your phone location, search, or drop a pin.</p>
+      <span class="eyebrow" id="tourStepLabel">Step 1 of 5</span>
+      <h2 id="tourTitle">Welcome to your matcha diary</h2>
+      <p id="tourBody">Keep every strawberry matcha, cafe, rating, and memory in one place.</p>
       <div class="tour-dots" id="tourDots" aria-label="Tour progress"></div>
       <div class="tour-actions">
         <button class="soft-button" type="button" id="tourBack">Back</button>
