@@ -6,21 +6,35 @@
   <meta name="theme-color" content="#f6efe9" />
   <title>Strawberry Matcha Tracker</title>
   <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js" defer></script>
 </head>
 <body>
   <main class="shell">
     <section class="card">
       <p class="eyebrow">MVP</p>
       <h1>Strawberry Matcha Tracker</h1>
-      <p class="lede">A simple home for tracking strawberry matcha drinks, favorites, and future ratings.</p>
+      <p class="lede">Track the strawberry matchas you try, remember your favorites, and build your personal ranking.</p>
 
-      <div class="status">
+      <div class="status" id="status" aria-live="polite">
         <span class="dot" aria-hidden="true"></span>
-        <span>Cloudflare Worker + static assets scaffold is ready.</span>
+        <span id="status-text">Checking sign-in status…</span>
       </div>
 
-      <div class="actions">
-        <button type="button" disabled>Continue with Google — coming next</button>
+      <div class="profile hidden" id="profile">
+        <img class="avatar" id="profile-picture" alt="" />
+        <div>
+          <strong id="profile-name"></strong>
+          <p id="profile-email"></p>
+        </div>
+      </div>
+
+      <div class="actions" id="signed-out-actions">
+        <a class="button" href="/auth/google">Continue with Google</a>
+      </div>
+
+      <div class="actions hidden" id="signed-in-actions">
+        <button type="button" disabled>Add your first matcha — coming next</button>
+        <a class="secondary-link" href="/auth/logout">Sign out</a>
       </div>
     </section>
   </main>
