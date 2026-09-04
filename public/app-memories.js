@@ -15,7 +15,11 @@ function memoryCardHtml(entry, options = {}) {
   const cardClass = expanded ? "memory-card is-expanded" : "memory-card";
   const dateText = formatEntryDate(entry);
   const note = entry.notes ? `<p class="memory-note-preview">“${escapeHtml(entry.notes)}”</p>` : "";
-  const badge = entry.shareCommunity ? `<span class="memory-photo-badge">Published</span>` : "";
+  const badge = entry.shareCommunity
+    ? `<span class="memory-photo-badge">Published</span>`
+    : entry.syncPending
+      ? `<span class="memory-photo-badge">Saved on this device</span>`
+      : "";
   const favoriteButton = state.user || entry.ownerName == null
     ? `<button class="memory-favorite-button ${entry.favorite ? "is-favorite" : ""}" type="button" data-action="favorite" data-entry-id="${escapeHtml(entry.id)}" aria-label="${entry.favorite ? "Remove from favorites" : "Save as favorite"}" title="${entry.favorite ? "Remove from favorites" : "Save as favorite"}">${entry.favorite ? "♥" : "♡"}</button>`
     : "";
