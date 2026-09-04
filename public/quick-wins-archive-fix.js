@@ -17,4 +17,9 @@
     }
     renderArchive();
   };
+
+  const safety = document.createElement("script");
+  safety.src = "/quick-wins-safety.js";
+  safety.async = false;
+  document.head.appendChild(safety);
 })();
