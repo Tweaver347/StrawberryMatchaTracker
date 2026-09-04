@@ -1,12 +1,12 @@
 {
-  "name": "Strawberry Matcha Tracker",
-  "short_name": "Matcha Tracker",
-  "description": "Track, rate, map, and remember every strawberry matcha.",
+  "name": "Strawberry Matcha Scrapbook",
+  "short_name": "Matcha Scrapbook",
+  "description": "A handmade digital scrapbook for every strawberry matcha, cafe, and memory.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#fff0f5",
-  "theme_color": "#f45f86",
+  "background_color": "#fff1f5",
+  "theme_color": "#f58aa8",
   "icons": [
     {
       "src": "/icon.svg",
