@@ -115,6 +115,10 @@ async function saveCompleteEntry(entry, photoData, options = {}) {
       if (photoData) setLocalPhoto(saved.id, photoData);
       return saved;
     } catch (error) {
+      if (options.requireCloud) {
+        showToast("That change needs a cloud connection. Nothing was published.");
+        return null;
+      }
       if (!options.quiet) showToast("Cloud save failed. The matcha was kept on this device.");
       else showToast("Cloud save failed. Your changes were kept on this device.");
     }
