@@ -109,7 +109,8 @@ const APP_MODULES = [
   "/app-utils.js",
   "/quick-wins.js",
   "/quick-wins-archive-fix.js",
-  "/preferences-polish.js"
+  "/preferences-polish.js",
+  "/navigation-achievements-polish.js"
 ];
 
 (async function loadScrapbookApp() {
