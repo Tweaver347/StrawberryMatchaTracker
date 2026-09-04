@@ -6,7 +6,8 @@
   "keep_vars": true,
   "vars": {
     "GOOGLE_CLIENT_ID": "561131600332-m55gdk3h1ase8d4me4vau6ltuqhi6auq.apps.googleusercontent.com",
-    "GOOGLE_REDIRECT_URI": "https://strawberrymatchatracker.thomaswe.workers.dev/auth/callback"
+    "GOOGLE_REDIRECT_URI": "https://strawberrymatchatracker.thomaswe.workers.dev/auth/callback",
+    "SUPABASE_URL": "https://gpfzqayrzomisolaojku.supabase.co"
   },
   "assets": {
     "directory": "./public",
