@@ -181,6 +181,14 @@ function attachLocalPhotoIfNeeded(entry) {
   return local && !entry.photoData ? { ...entry, photoData: local } : entry;
 }
 
+function mergeRemoteWithPendingEntries(remote, local) {
+  const map = new Map(remote.map((entry) => [entry.id, { ...entry, syncPending: false }]));
+  local.filter((entry) => entry?.syncPending).forEach((entry) => {
+    if (!map.has(entry.id)) map.set(entry.id, attachLocalPhotoIfNeeded(entry));
+  });
+  return [...map.values()].sort(sortEntriesNewest);
+}
+
 function mergeDrafts(remote, local) {
   const map = new Map();
   [...local, ...remote].forEach((draft) => {
