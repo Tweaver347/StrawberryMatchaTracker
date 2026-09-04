@@ -115,3 +115,39 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+
+const APP_MODULES = [
+  "/app-events.js",
+  "/app-data.js",
+  "/app-memories.js",
+  "/app-places.js",
+  "/app-profile.js",
+  "/app-drafts.js",
+  "/app-capture.js",
+  "/app-log-save.js",
+  "/app-settings.js",
+  "/app-utils.js"
+];
+
+(async function loadScrapbookApp() {
+  try {
+    for (const src of APP_MODULES) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = false;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Could not load ${src}`));
+        document.head.appendChild(script);
+      });
+    }
+    await init();
+  } catch (error) {
+    console.error("Strawberry Matcha app failed to start", error);
+    const toast = document.getElementById("toast");
+    if (toast) {
+      toast.textContent = "The scrapbook could not finish loading. Refresh and try again.";
+      toast.classList.add("is-visible");
+    }
+  }
+})();
