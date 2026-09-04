@@ -1,82 +1,129 @@
 # Strawberry Matcha Tracker
 
-A strawberry-matcha themed web app for remembering, rating, mapping, and favoriting strawberry matcha drinks.
+A mobile-first strawberry matcha diary for photographing, rating, mapping, and remembering drinks worth ordering again.
 
 ## Product concept
 
-Each entry captures both the drink and the experience around it. Entries are private by default, with an optional community-share toggle that places the drink on the public community feed/map.
+Each entry captures both the drink and the experience around it. Entries are private by default. A user can explicitly publish an entry to the community feed and map.
 
-The MVP supports:
+The current MVP includes:
 
-- Google sign-in plus guest browsing
-- Photo upload with EXIF GPS detection when location data is present
-- Current-device location
-- Place search and map pin placement
-- 1–5 matcha rating with interactive rounded stars
-- 1–5 vibe check with a separate icon-based rating
-- Price and drink size
-- Milk type and sweetness level
-- Visit date and notes
-- Wait time and would-order-again
-- Special add-ons
+- Google sign-in and guest browsing
+- A responsive mobile layout with bottom navigation
+- Direct phone-camera capture and camera-roll selection
+- Photo preview, compression, and EXIF GPS detection
+- Current-device location, place search, and map pin placement
+- Interactive 1–5 matcha stars and a separate 1–5 vibe check
+- Quick logging after the required photo/place and rating steps
+- Optional price, size, milk, sweetness, date, wait time, add-ons, and notes
+- Would-order-again tracking
 - Individual entry favorites
-- Private-by-default entries with optional community sharing
-- Community map powered by Leaflet and OpenStreetMap
-- Guided product tour
+- Private-by-default entries with optional community publishing
+- A community map powered by Leaflet and OpenStreetMap
+- A profile page with personal stats and published entries
+- Dark mode, text sizing, high contrast, reduced motion, readable type, larger touch targets, and reduced visual clutter
+- A first-launch guided tour that can be restarted from Settings
+- Installable web-app metadata for phone home screens
 
-## Current architecture
+## Production architecture
 
-- **Frontend:** static HTML/CSS/JavaScript served as Cloudflare Worker assets
+- **Frontend:** static HTML, CSS, and JavaScript served through Cloudflare Worker assets
 - **Backend:** Cloudflare Worker in `src/index.js`
-- **Authentication:** Google OAuth 2.0 / OpenID Connect
-- **Database:** Cloudflare D1 schema prepared in `migrations/0001_initial.sql`
-- **Maps:** Leaflet + OpenStreetMap tiles
+- **Authentication:** Google OAuth 2.0 / OpenID Connect with a secure, HTTP-only app session cookie
+- **Database:** Supabase PostgreSQL
+- **Photo storage:** private Supabase Storage bucket named `matcha-photos`
+- **Maps:** Leaflet with OpenStreetMap tiles
 - **Location search:** OpenStreetMap Nominatim
 - **Photo metadata:** exifr for EXIF/GPS parsing
 
-The app currently falls back to browser local storage if the D1 binding has not been configured yet. This makes the full interface testable while the production database is being connected.
+The browser talks only to same-origin Worker routes. The Worker validates the signed-in session, enforces ownership and publishing rules, then calls Supabase with a server-only secret key. Supabase credentials are never shipped to browser JavaScript.
+
+## Supabase data model
+
+The app uses three server-managed tables:
+
+- `app_users` — Google account identity and synced display/accessibility settings
+- `matcha_entries` — drink details, ratings, coordinates, publication state, and private photo references
+- `matcha_favorites` — per-user favorites
+
+The `matcha-photos` bucket is private. Photos are returned through `/api/photos/:entryId` only after the Worker verifies that the requester owns the entry or the entry was published.
+
+The production migrations are version-controlled under `supabase/migrations/` and have already been applied to the connected Supabase project.
 
 ## Repository structure
 
 ```text
 .
-├── migrations/
-│   └── 0001_initial.sql
 ├── public/
 │   ├── app.js
+│   ├── cloud-sync.js
+│   ├── icon.svg
 │   ├── index.html
+│   ├── manifest.webmanifest
 │   └── styles.css
 ├── src/
 │   └── index.js
+├── supabase/
+│   └── migrations/
+│       ├── 20260904183341_create_cloud_matcha_backend.sql
+│       └── 20260904183645_secure_and_index_cloud_matcha_backend.sql
 ├── package.json
 └── wrangler.jsonc
 ```
 
+## Worker API
+
+```text
+GET  /api/me
+GET  /api/status
+GET  /api/settings
+PUT  /api/settings
+GET  /api/entries?scope=mine
+GET  /api/entries?scope=community
+POST /api/entries
+POST /api/entries/:id/favorite
+GET  /api/photos/:id
+```
+
 ## Runtime configuration
 
-Cloudflare must provide these values to the Worker:
+Cloudflare must provide these values:
 
 - `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET` — store this as a Cloudflare Secret, never commit it
+- `GOOGLE_CLIENT_SECRET` — Cloudflare Secret
 - `GOOGLE_REDIRECT_URI`
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY` — Cloudflare Secret; use a current `sb_secret_...` server key
 
-Current callback URL:
+`GOOGLE_CLIENT_ID`, `GOOGLE_REDIRECT_URI`, and `SUPABASE_URL` are defined in `wrangler.jsonc`. Both secret values must remain in Cloudflare and must never be committed.
+
+Current Google callback:
 
 ```text
 https://strawberrymatchatracker.thomaswe.workers.dev/auth/callback
 ```
 
-## D1 database setup
+Current Supabase project URL:
 
-The API is already written to use a D1 binding named `DB`. To finish cloud persistence:
+```text
+https://gpfzqayrzomisolaojku.supabase.co
+```
 
-1. Create a D1 database in Cloudflare named something like `strawberry-matcha-tracker-db`.
-2. Copy its database ID.
-3. Add a D1 binding named `DB` to `wrangler.jsonc`.
-4. Apply `migrations/0001_initial.sql` to the database.
-5. Redeploy the Worker.
+Because `keep_vars` is enabled in `wrangler.jsonc`, normal GitHub deployments preserve secrets already stored in the Cloudflare dashboard.
 
-Once `env.DB` exists, signed-in users will store entries and favorites in D1 instead of browser local storage.
+## Cloud sync behavior
+
+Signed-in users receive durable, cross-device storage for:
+
+- Matcha entries
+- Favorites
+- Published/community entries
+- Photos
+- Display and accessibility preferences
+
+Guest entries and guest preferences stay in the current browser. The app can still be explored without signing in.
+
+`public/cloud-sync.js` bridges the existing frontend flow to the Worker by including compressed photo data during entry creation, resolving private cloud photo routes when entries load, and syncing account settings.
 
 ## Local development
 
@@ -85,6 +132,8 @@ Install dependencies:
 ```bash
 npm install
 ```
+
+Create a local `.dev.vars` file with the required secrets. Do not commit that file.
 
 Run the Worker locally:
 
@@ -98,18 +147,31 @@ Deploy:
 npm run deploy
 ```
 
-## Privacy behavior
+## Privacy and security behavior
 
 - New entries are private by default.
-- A user must explicitly enable **Share with the community** for an entry to appear on the community map.
-- Guest mode can browse and test the experience locally.
-- Google credentials and secrets are never stored in the frontend.
+- Community publication requires an explicit user toggle.
+- Private photos are never given a permanent public URL.
+- Database tables have Row Level Security enabled and deny browser roles direct access.
+- The Cloudflare Worker performs authorization before using its server-only Supabase key.
+- Google and Supabase secret keys never appear in frontend code or Git history.
+- Uploaded images are limited by type and size before storage.
+
+## Current testing checklist
+
+1. Sign in with a Google test account.
+2. Log one private matcha without a photo.
+3. Reload on another device and confirm it appears.
+4. Log another matcha using the phone camera.
+5. Confirm its photo displays after a full reload.
+6. Favorite and unfavorite an entry.
+7. Publish an entry with coordinates and confirm it appears on the community map.
+8. Change dark mode or text size, then confirm the preference follows the signed-in account to another device.
 
 ## Next development steps
 
-1. Connect the production D1 database.
-2. Add durable image storage with Cloudflare R2 so uploaded photos sync across devices.
-3. Add entry editing/deletion.
-4. Add community feed cards in addition to the map.
-5. Improve place lookup and location normalization.
-6. Add onboarding/tour persistence so the tour only auto-prompts when appropriate.
+1. Add entry editing and deletion, including photo cleanup.
+2. Add a card-based community feed alongside the map.
+3. Improve cafe search and normalize repeated place records.
+4. Add image-loading placeholders and upload progress.
+5. Add automated Worker API tests and deployment checks.
