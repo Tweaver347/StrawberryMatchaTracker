@@ -92,7 +92,9 @@ async function completeMatchaLog() {
   replaceEntry(saved);
   state.lastSavedEntryId = saved.id;
   $("logDialog").close();
-  $("successSummary").textContent = `${saved.placeName} · ${saved.rating}/5 strawberries. It is private until you choose to share it.`;
+  $("successSummary").textContent = saved.syncPending
+    ? `${saved.placeName} · ${saved.rating}/5 strawberries. Saved on this device while cloud sync is unavailable.`
+    : `${saved.placeName} · ${saved.rating}/5 strawberries. It is private until you choose to share it.`;
   $("successDialog").showModal();
   renderAll();
   announce("Matcha logged successfully.");
@@ -111,7 +113,7 @@ async function saveCompleteEntry(entry, photoData, options = {}) {
         throw new Error(detail?.error || `save_${response.status}`);
       }
       const data = await response.json();
-      const saved = { ...attachLocalPhotoIfNeeded(data.entry), favorite: Boolean(entry.favorite) };
+      const saved = { ...attachLocalPhotoIfNeeded(data.entry), favorite: Boolean(entry.favorite), syncPending: false };
       if (photoData) setLocalPhoto(saved.id, photoData);
       return saved;
     } catch (error) {
@@ -119,12 +121,11 @@ async function saveCompleteEntry(entry, photoData, options = {}) {
         showToast("That change needs a cloud connection. Nothing was published.");
         return null;
       }
-      if (!options.quiet) showToast("Cloud save failed. The matcha was kept on this device.");
-      else showToast("Cloud save failed. Your changes were kept on this device.");
+      showToast("Cloud sync was unavailable. This matcha is safely stored on this device.");
     }
   }
 
-  const local = { ...entry, photoData: photoData || entry.photoData || getEntryPhoto(entry), photoUrl: null, status: "complete" };
+  const local = { ...entry, photoData: photoData || entry.photoData || getEntryPhoto(entry), photoUrl: null, status: "complete", syncPending: Boolean(state.user) };
   if (local.photoData?.startsWith("data:image/")) setLocalPhoto(local.id, local.photoData);
   replaceEntry(local, false);
   saveLocalEntries();
