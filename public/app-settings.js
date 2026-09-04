@@ -1,5 +1,14 @@
 "use strict";
 
+(function loadAccessibilityStylesheet() {
+  if (document.querySelector('link[data-scrapbook-accessibility]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/accessibility.css";
+  link.dataset.scrapbookAccessibility = "true";
+  document.head.appendChild(link);
+})();
+
 function openSettings() {
   updateSettingsControls();
   $("settingsDialog").showModal();
