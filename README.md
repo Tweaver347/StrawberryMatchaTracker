@@ -216,7 +216,7 @@ A complete entry requires a stored photo, place name, and rating. A draft may be
 │   └── migrations/
 │       ├── 20260904183341_create_cloud_matcha_backend.sql
 │       ├── 20260904183645_secure_and_index_cloud_matcha_backend.sql
-│       └── 20260904190000_add_draft_lifecycle.sql
+│       └── 20260904192517_add_draft_lifecycle.sql
 ├── package.json
 └── wrangler.jsonc
 ```
