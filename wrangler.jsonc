@@ -1,8 +1,10 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "strawberry-matcha-tracker",
+  "main": "./src/index.js",
   "compatibility_date": "2026-09-04",
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    "binding": "ASSETS"
   }
 }
