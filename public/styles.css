@@ -69,20 +69,56 @@ h1 {
 .dot {
   width: 10px;
   height: 10px;
+  flex: 0 0 auto;
   border-radius: 999px;
   background: #769a73;
   box-shadow: 0 0 0 5px rgba(118, 154, 115, 0.12);
 }
 
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(68, 92, 68, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eef4eb;
+}
+
+.profile strong {
+  display: block;
+  color: #35543a;
+}
+
+.profile p {
+  margin: 3px 0 0;
+  color: #747d74;
+  font-size: 0.9rem;
+}
+
 .actions { margin-top: 22px; }
 
-button {
+button,
+.button {
   width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   border-radius: 14px;
   padding: 14px 18px;
   font: inherit;
   font-weight: 700;
+  text-decoration: none;
   background: #3f6145;
   color: white;
 }
@@ -91,6 +127,16 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
+
+.secondary-link {
+  display: block;
+  margin-top: 14px;
+  text-align: center;
+  color: #667066;
+  font-size: 0.92rem;
+}
+
+.hidden { display: none; }
 
 @media (max-width: 560px) {
   .card { padding: 28px 22px; }
