@@ -1,0 +1,43 @@
+:root {
+  --action-start: #cd4169;
+  --action-end: #a92f54;
+}
+
+html[data-theme="dark"] {
+  --action-start: #b93661;
+  --action-end: #862544;
+}
+
+.primary-button,
+.hero-log-button,
+.desktop-log-button,
+.mobile-log-button {
+  background: linear-gradient(135deg, var(--action-start), var(--action-end));
+  color: #ffffff;
+}
+
+.primary-button:focus-visible,
+.hero-log-button:focus-visible,
+.desktop-log-button:focus-visible,
+.mobile-log-button:focus-visible {
+  outline-color: #ffffff;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--action-start) 45%, transparent);
+}
+
+@media (forced-colors: active) {
+  .primary-button,
+  .hero-log-button,
+  .desktop-log-button,
+  .mobile-log-button,
+  .strawberry-rating button,
+  .achievement-sticker,
+  .memory-card-main {
+    forced-color-adjust: auto;
+  }
+
+  .tape,
+  .paper-noise,
+  .doodle {
+    display: none !important;
+  }
+}
