@@ -108,7 +108,7 @@ const state = {
   userMarker: null,
   showCommunityLayer: false,
   tourIndex: 0,
-  settings: loadLocalSettings(),
+  settings: { ...DEFAULT_SETTINGS },
   settingsSyncTimer: null,
   draftSyncTimer: null,
   placeGroups: [],
@@ -141,6 +141,7 @@ const APP_MODULES = [
         document.head.appendChild(script);
       });
     }
+    state.settings = loadLocalSettings();
     await init();
   } catch (error) {
     console.error("Strawberry Matcha app failed to start", error);
