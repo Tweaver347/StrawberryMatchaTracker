@@ -1,33 +1,100 @@
+body {
+  position: relative;
+  isolation: isolate;
+}
+
+.page-shell {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep the decorative scrapbook background above the body gradient,
+   but safely behind every interactive app surface. */
 .scrapbook-parallax {
   --parallax-y: 0px;
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  opacity: .16;
+  opacity: .38;
+  background:
+    radial-gradient(circle at 13% 24%, rgba(248, 165, 187, .32), transparent 12rem),
+    radial-gradient(circle at 86% 44%, rgba(189, 210, 165, .28), transparent 13rem),
+    radial-gradient(circle at 32% 88%, rgba(255, 199, 213, .28), transparent 14rem);
+}
+
+/* The original paper texture/doodles were also sitting behind the body
+   background. Bring them into the same decorative background plane. */
+.paper-noise,
+.doodle {
+  z-index: 0;
 }
 
 .parallax-layer {
   position: absolute;
-  left: -8vw;
-  width: 116vw;
+  left: -10vw;
+  width: 120vw;
   white-space: nowrap;
-  font-size: clamp(1.4rem, 3vw, 2.5rem);
-  letter-spacing: clamp(1.5rem, 5vw, 5rem);
-  filter: saturate(.8);
+  font-size: clamp(1.65rem, 3.2vw, 2.8rem);
+  letter-spacing: clamp(1.8rem, 5.5vw, 5.5rem);
+  line-height: 1;
+  filter: saturate(.95);
+  text-shadow: 0 10px 24px rgba(127, 36, 67, .14);
   will-change: transform;
   user-select: none;
 }
 
 .parallax-strawberries {
-  top: 12vh;
+  top: 7vh;
   transform: translate3d(0, calc(var(--parallax-y) * -1), 0) rotate(-3deg);
 }
 
+.parallax-strawberries::before,
+.parallax-strawberries::after,
+.parallax-matcha::before,
+.parallax-matcha::after {
+  position: absolute;
+  left: 5vw;
+  white-space: nowrap;
+}
+
+.parallax-strawberries::before {
+  content: "🍓　　🍓　　　　🍓　　🍓　　　　🍓　　　🍓　　　　🍓";
+  top: 34vh;
+  left: 12vw;
+  transform: rotate(5deg) scale(.82);
+  opacity: .84;
+}
+
+.parallax-strawberries::after {
+  content: "🍓　　　🍓　　🍓　　　　🍓　　　🍓　　🍓　　　　🍓";
+  top: 72vh;
+  left: -1vw;
+  transform: rotate(-4deg) scale(.72);
+  opacity: .65;
+}
+
 .parallax-matcha {
-  top: 62vh;
+  top: 24vh;
   transform: translate3d(0, var(--parallax-y), 0) rotate(2deg);
+  opacity: .88;
+}
+
+.parallax-matcha::before {
+  content: "🍵　　　🍵　　　　🍵　　🍵　　　　🍵　　　🍵　　　　🍵";
+  top: 34vh;
+  left: -2vw;
+  transform: rotate(-5deg) scale(.76);
+  opacity: .72;
+}
+
+.parallax-matcha::after {
+  content: "🍵　　🍵　　　　🍵　　　🍵　　🍵　　　　🍵　　　🍵";
+  top: 67vh;
+  left: 10vw;
+  transform: rotate(4deg) scale(.66);
+  opacity: .58;
 }
 
 .scrapbook-parallax.is-static .parallax-layer,
@@ -132,11 +199,28 @@
   overflow: hidden;
 }
 
+html[data-theme="dark"] .scrapbook-parallax {
+  opacity: .26;
+  background:
+    radial-gradient(circle at 13% 24%, rgba(190, 93, 125, .24), transparent 12rem),
+    radial-gradient(circle at 86% 44%, rgba(120, 153, 105, .20), transparent 13rem),
+    radial-gradient(circle at 32% 88%, rgba(141, 69, 96, .20), transparent 14rem);
+}
+
 html[data-theme="dark"] .active-filter-chip {
   background: color-mix(in srgb, var(--berry-700) 28%, var(--surface));
 }
 
 @media (max-width: 680px) {
+  .scrapbook-parallax {
+    opacity: .31;
+  }
+
+  .parallax-layer {
+    font-size: clamp(1.45rem, 7vw, 2.1rem);
+    letter-spacing: 2rem;
+  }
+
   .memory-tools-toolbar {
     grid-template-columns: minmax(0, 1fr) auto;
   }
