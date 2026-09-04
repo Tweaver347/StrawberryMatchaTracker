@@ -26,31 +26,11 @@ const DEFAULT_SETTINGS = {
 const RATING_WORDS = ["Not for me", "Disappointing", "Pretty good", "Really good", "Favorite-worthy"];
 
 const TOUR_STEPS = [
-  {
-    icon: "🍓",
-    title: "Welcome to your matcha scrapbook",
-    body: "This is a personal record of the drinks, cafes, and little moments you want to remember.",
-  },
-  {
-    icon: "📷",
-    title: "Start with one photo",
-    body: "Tap Log a Matcha and the camera opens first. Retake it until the memory looks right, or choose one from your camera roll.",
-  },
-  {
-    icon: "⌖",
-    title: "Confirm the place",
-    body: "We use photo GPS or your current location to suggest one likely cafe. You confirm it, or choose another.",
-  },
-  {
-    icon: "🍓🍓🍓",
-    title: "Three things make a finished log",
-    body: "A photo, a place, and a 1–5 strawberry rating are all you need. Drink, visit, and thought details can wait.",
-  },
-  {
-    icon: "♡",
-    title: "Let your history guide you",
-    body: "Places, the personal map, achievements, drafts, defaults, and accessibility settings all grow from the memories you log.",
-  },
+  { icon: "🍓", title: "Welcome to your matcha scrapbook", body: "This is a personal record of the drinks, cafes, and little moments you want to remember." },
+  { icon: "📷", title: "Start with one photo", body: "Tap Log a Matcha and the camera opens first. Retake it until the memory looks right, or choose one from your camera roll." },
+  { icon: "⌖", title: "Confirm the place", body: "We use photo GPS or your current location to suggest one likely cafe. You confirm it, or choose another." },
+  { icon: "🍓🍓🍓", title: "Three things make a finished log", body: "A photo, a place, and a 1–5 strawberry rating are all you need. Drink, visit, and thought details can wait." },
+  { icon: "♡", title: "Let your history guide you", body: "Places, the personal map, achievements, drafts, defaults, and accessibility settings all grow from the memories you log." },
 ];
 
 const ACHIEVEMENT_DEFINITIONS = [
@@ -126,7 +106,8 @@ const APP_MODULES = [
   "/app-capture.js",
   "/app-log-save.js",
   "/app-settings.js",
-  "/app-utils.js"
+  "/app-utils.js",
+  "/quick-wins.js"
 ];
 
 (async function loadScrapbookApp() {
