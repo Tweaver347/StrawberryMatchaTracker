@@ -3,6 +3,11 @@
   "name": "strawberrymatchatracker",
   "main": "./src/index.js",
   "compatibility_date": "2026-09-04",
+  "keep_vars": true,
+  "vars": {
+    "GOOGLE_CLIENT_ID": "561131600332-m55gdk3h1ase8d4me4vau6ltuqhi6auq.apps.googleusercontent.com",
+    "GOOGLE_REDIRECT_URI": "https://strawberrymatchatracker.thomaswe.workers.dev/auth/callback"
+  },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS"
