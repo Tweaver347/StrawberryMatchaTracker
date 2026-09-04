@@ -33,6 +33,9 @@ const ENTRY_COLUMNS = [
   "share_community",
   "photo_path",
   "photo_mime_type",
+  "status",
+  "draft_step",
+  "completed_at",
   "created_at",
   "updated_at"
 ].join(",");
@@ -51,6 +54,9 @@ export default {
       if (url.pathname === "/api/settings") return settingsApi(request, env);
       if (url.pathname === "/api/entries") return entriesApi(request, env, url);
 
+      const entryMatch = url.pathname.match(/^\/api\/entries\/([0-9a-f-]+)$/i);
+      if (entryMatch) return entryItemApi(request, env, entryMatch[1]);
+
       const favoriteMatch = url.pathname.match(/^\/api\/entries\/([0-9a-f-]+)\/favorite$/i);
       if (favoriteMatch) return favoriteApi(request, env, favoriteMatch[1]);
 
@@ -68,7 +74,6 @@ export default {
       if (url.pathname.startsWith("/api/")) {
         return jsonResponse({ error: "internal_error" }, 500);
       }
-
       return textResponse("The app hit an unexpected error. Please try again.", 500);
     }
   }
@@ -201,7 +206,6 @@ async function currentUser(request, env) {
 async function getSessionUser(request, env) {
   const secret = sessionSecret(env);
   if (!secret) return null;
-
   const cookies = parseCookies(request.headers.get("cookie") || "");
   if (!cookies[SESSION_COOKIE]) return null;
   return verifySession(cookies[SESSION_COOKIE], secret);
@@ -211,7 +215,8 @@ function statusApi(env) {
   return jsonResponse({
     database: supabaseReady(env),
     storage: supabaseReady(env),
-    provider: supabaseReady(env) ? "supabase" : null
+    provider: supabaseReady(env) ? "supabase" : null,
+    drafts: supabaseReady(env)
   });
 }
 
@@ -219,12 +224,10 @@ async function settingsApi(request, env) {
   if (!["GET", "PUT", "PATCH"].includes(request.method)) {
     return methodNotAllowed(["GET", "PUT", "PATCH"]);
   }
-
   if (!supabaseReady(env)) return databaseUnavailable();
 
   const user = await getSessionUser(request, env);
   if (!user) return jsonResponse({ error: "authentication_required" }, 401);
-
   await upsertAppUser(env, user);
 
   if (request.method === "GET") {
@@ -269,18 +272,19 @@ async function entriesApi(request, env, url) {
     const scope = url.searchParams.get("scope") || "community";
     const user = await getSessionUser(request, env);
 
-    if (scope === "mine") {
+    if (scope === "mine" || scope === "drafts") {
       if (!user) return jsonResponse({ error: "authentication_required" }, 401);
       await upsertAppUser(env, user);
 
       const params = new URLSearchParams({
         owner_sub: `eq.${user.sub}`,
+        status: scope === "drafts" ? "eq.draft" : "eq.complete",
         select: ENTRY_COLUMNS,
-        order: "visit_date.desc.nullslast,created_at.desc",
+        order: scope === "drafts" ? "updated_at.desc" : "visit_date.desc.nullslast,completed_at.desc.nullslast,created_at.desc",
         limit: "250"
       });
       const rows = await supabaseJson(env, "rest", `matcha_entries?${params.toString()}`);
-      const favoriteIds = await getFavoriteIds(env, user.sub);
+      const favoriteIds = scope === "mine" ? await getFavoriteIds(env, user.sub) : new Set();
       return jsonResponse({ entries: rows.map((row) => rowToEntry(row, favoriteIds)) });
     }
 
@@ -288,13 +292,14 @@ async function entriesApi(request, env, url) {
 
     const params = new URLSearchParams({
       share_community: "eq.true",
+      status: "eq.complete",
       select: ENTRY_COLUMNS,
-      order: "created_at.desc",
+      order: "completed_at.desc.nullslast,created_at.desc",
       limit: "250"
     });
     const rows = await supabaseJson(env, "rest", `matcha_entries?${params.toString()}`);
     const favoriteIds = user ? await getFavoriteIds(env, user.sub) : new Set();
-    return jsonResponse({ entries: rows.map((row) => rowToEntry(row, favoriteIds)) });
+    return jsonResponse({ entries: rows.map((row) => rowToCommunityEntry(row, favoriteIds)) });
   }
 
   const user = await getSessionUser(request, env);
@@ -303,13 +308,14 @@ async function entriesApi(request, env, url) {
   const body = await readJson(request);
   if (!body) return jsonResponse({ error: "invalid_json" }, 400);
 
-  const validation = validateEntry(body);
+  const requestedStatus = body.status === "draft" ? "draft" : "complete";
+  const validation = validateEntryShape(body, requestedStatus);
   if (validation) return jsonResponse({ error: validation }, 400);
 
   await upsertAppUser(env, user);
 
-  const entry = normalizeEntry(body, user);
-  const existing = await getEntryById(env, entry.id, "owner_sub,photo_path,photo_mime_type,created_at");
+  const entry = normalizeEntry(body, user, requestedStatus);
+  const existing = await getEntryById(env, entry.id, "owner_sub,photo_path,photo_mime_type,created_at,status");
   if (existing && existing.owner_sub !== user.sub) {
     return jsonResponse({ error: "entry_id_conflict" }, 409);
   }
@@ -331,6 +337,12 @@ async function entriesApi(request, env, url) {
     uploadedPath = photoPath;
   }
 
+  if (requestedStatus === "complete") {
+    if (!photoPath) return jsonResponse({ error: "photo_required" }, 400);
+    if (!entry.placeName) return jsonResponse({ error: "place_name_required" }, 400);
+    if (!entry.rating) return jsonResponse({ error: "rating_required" }, 400);
+  }
+
   const createdAt = existing?.created_at || entry.createdAt;
   const row = entryToRow(entry, user, photoPath, photoMimeType, createdAt);
   const params = new URLSearchParams({ on_conflict: "id" });
@@ -339,9 +351,7 @@ async function entriesApi(request, env, url) {
   try {
     savedRows = await supabaseJson(env, "rest", `matcha_entries?${params.toString()}`, {
       method: "POST",
-      headers: {
-        Prefer: "resolution=merge-duplicates,return=representation"
-      },
+      headers: { Prefer: "resolution=merge-duplicates,return=representation" },
       body: JSON.stringify([row])
     });
   } catch (error) {
@@ -359,6 +369,27 @@ async function entriesApi(request, env, url) {
   return jsonResponse({ entry: rowToEntry(saved, new Set()) }, existing ? 200 : 201);
 }
 
+async function entryItemApi(request, env, entryId) {
+  if (request.method !== "DELETE") return methodNotAllowed(["DELETE"]);
+  if (!supabaseReady(env)) return databaseUnavailable();
+  if (!isUuid(entryId)) return jsonResponse({ error: "invalid_entry_id" }, 400);
+
+  const user = await getSessionUser(request, env);
+  if (!user) return jsonResponse({ error: "authentication_required" }, 401);
+
+  const entry = await getEntryById(env, entryId, "id,owner_sub,photo_path");
+  if (!entry || entry.owner_sub !== user.sub) return jsonResponse({ error: "entry_not_found" }, 404);
+
+  const params = new URLSearchParams({ id: `eq.${entryId}`, owner_sub: `eq.${user.sub}` });
+  await supabaseJson(env, "rest", `matcha_entries?${params.toString()}`, {
+    method: "DELETE",
+    headers: { Prefer: "return=minimal" }
+  });
+
+  if (entry.photo_path) await deletePhotoBestEffort(env, entry.photo_path);
+  return new Response(null, { status: 204 });
+}
+
 async function favoriteApi(request, env, entryId) {
   if (request.method !== "POST") return methodNotAllowed(["POST"]);
   if (!supabaseReady(env)) return databaseUnavailable();
@@ -372,8 +403,8 @@ async function favoriteApi(request, env, entryId) {
     return jsonResponse({ error: "favorite_boolean_required" }, 400);
   }
 
-  const entry = await getEntryById(env, entryId, "id,owner_sub,share_community");
-  if (!entry || (entry.owner_sub !== user.sub && !entry.share_community)) {
+  const entry = await getEntryById(env, entryId, "id,owner_sub,share_community,status");
+  if (!entry || entry.status !== "complete" || (entry.owner_sub !== user.sub && !entry.share_community)) {
     return jsonResponse({ error: "entry_not_found" }, 404);
   }
 
@@ -407,16 +438,13 @@ async function photoApi(request, env, entryId) {
   if (!supabaseReady(env)) return databaseUnavailable();
   if (!isUuid(entryId)) return jsonResponse({ error: "invalid_entry_id" }, 400);
 
-  const entry = await getEntryById(
-    env,
-    entryId,
-    "id,owner_sub,share_community,photo_path,photo_mime_type"
-  );
+  const entry = await getEntryById(env, entryId, "id,owner_sub,share_community,photo_path,photo_mime_type,status");
   if (!entry || !entry.photo_path) return jsonResponse({ error: "photo_not_found" }, 404);
 
   const user = await getSessionUser(request, env);
   const isOwner = Boolean(user && user.sub === entry.owner_sub);
-  if (!entry.share_community && !isOwner) {
+  const publiclyVisible = entry.status === "complete" && entry.share_community;
+  if (!publiclyVisible && !isOwner) {
     return jsonResponse({ error: "photo_not_found" }, 404);
   }
 
@@ -434,10 +462,9 @@ async function photoApi(request, env, entryId) {
 
   const headers = new Headers();
   headers.set("content-type", storageResponse.headers.get("content-type") || entry.photo_mime_type || "image/jpeg");
-  headers.set("cache-control", entry.share_community ? "public, max-age=900" : "private, max-age=300");
+  headers.set("cache-control", publiclyVisible ? "public, max-age=900" : "private, max-age=300");
   headers.set("x-content-type-options", "nosniff");
   headers.set("vary", "Cookie");
-
   const etag = storageResponse.headers.get("etag");
   if (etag) headers.set("etag", etag);
 
@@ -487,13 +514,13 @@ function rowToEntry(row, favoriteIds) {
     id: row.id,
     ownerName: row.owner_name,
     ownerPicture: row.owner_picture || null,
-    placeName: row.place_name,
+    placeName: row.place_name || null,
     locationLabel: row.location_label || "",
     latitude: nullableNumber(row.latitude),
     longitude: nullableNumber(row.longitude),
     locationSource: row.location_source || null,
-    rating: Number(row.rating),
-    vibe: Number(row.vibe),
+    rating: nullableInteger(row.rating, 1, 5),
+    vibe: nullableInteger(row.vibe, 1, 5),
     priceCents: nullableInteger(row.price_cents, 0, 1000000),
     drinkSize: row.drink_size || null,
     milkType: row.milk_type || null,
@@ -502,16 +529,36 @@ function rowToEntry(row, favoriteIds) {
     waitMinutes: nullableInteger(row.wait_minutes, 0, 600),
     addOns: Array.isArray(row.add_ons) ? row.add_ons : [],
     notes: row.notes || "",
-    wouldOrderAgain: Boolean(row.would_order_again),
+    wouldOrderAgain: typeof row.would_order_again === "boolean" ? row.would_order_again : null,
     shareCommunity: Boolean(row.share_community),
     favorite: favoriteIds.has(row.id),
     photoUrl: row.photo_path ? `/api/photos/${row.id}` : null,
+    status: row.status || "complete",
+    draftStep: nullableInteger(row.draft_step, 1, 3) || 1,
+    completedAt: row.completed_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
 }
 
+function rowToCommunityEntry(row, favoriteIds) {
+  return {
+    id: row.id,
+    placeName: row.place_name || "Published matcha",
+    locationLabel: row.location_label || "",
+    latitude: nullableNumber(row.latitude),
+    longitude: nullableNumber(row.longitude),
+    rating: nullableInteger(row.rating, 1, 5),
+    favorite: favoriteIds.has(row.id),
+    photoUrl: row.photo_path ? `/api/photos/${row.id}` : null,
+    status: "complete",
+    shareCommunity: true,
+    createdAt: row.completed_at || row.created_at
+  };
+}
+
 function entryToRow(entry, user, photoPath, photoMimeType, createdAt) {
+  const status = entry.status === "draft" ? "draft" : "complete";
   return {
     id: entry.id,
     owner_sub: user.sub,
@@ -533,23 +580,34 @@ function entryToRow(entry, user, photoPath, photoMimeType, createdAt) {
     add_ons: entry.addOns,
     notes: entry.notes,
     would_order_again: entry.wouldOrderAgain,
-    share_community: entry.shareCommunity,
+    share_community: status === "complete" ? entry.shareCommunity : false,
     photo_path: photoPath,
     photo_mime_type: photoMimeType,
+    status,
+    draft_step: entry.draftStep,
+    completed_at: status === "complete" ? (entry.completedAt || new Date().toISOString()) : null,
     created_at: createdAt,
     updated_at: new Date().toISOString()
   };
 }
 
-function validateEntry(body) {
-  if (typeof body.placeName !== "string" || !body.placeName.trim() || body.placeName.trim().length > 160) {
-    return "place_name_required";
+function validateEntryShape(body, status) {
+  if (body.placeName != null && (typeof body.placeName !== "string" || body.placeName.trim().length > 160)) {
+    return "invalid_place_name";
   }
 
-  const rating = Number(body.rating);
-  const vibe = Number(body.vibe);
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return "rating_must_be_1_to_5";
-  if (!Number.isInteger(vibe) || vibe < 1 || vibe > 5) return "vibe_must_be_1_to_5";
+  if (body.rating != null && body.rating !== "") {
+    const rating = Number(body.rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) return "rating_must_be_1_to_5";
+  }
+
+  if (body.vibe != null && body.vibe !== "") {
+    const vibe = Number(body.vibe);
+    if (!Number.isInteger(vibe) || vibe < 1 || vibe > 5) return "vibe_must_be_1_to_5";
+  }
+
+  if (status === "complete" && (!body.placeName || !String(body.placeName).trim())) return "place_name_required";
+  if (status === "complete" && (!Number.isInteger(Number(body.rating)) || Number(body.rating) < 1 || Number(body.rating) > 5)) return "rating_required";
   if (body.notes != null && String(body.notes).length > 500) return "notes_too_long";
 
   if (body.latitude != null && body.latitude !== "") {
@@ -566,18 +624,18 @@ function validateEntry(body) {
   return null;
 }
 
-function normalizeEntry(body, user) {
+function normalizeEntry(body, user, status) {
   return {
     id: isUuid(body.id) ? body.id.toLowerCase() : crypto.randomUUID(),
     ownerName: user.name,
     ownerPicture: user.picture || null,
-    placeName: body.placeName.trim().slice(0, 160),
+    placeName: cleanString(body.placeName, 160),
     locationLabel: cleanString(body.locationLabel, 400),
     latitude: nullableNumber(body.latitude),
     longitude: nullableNumber(body.longitude),
     locationSource: cleanString(body.locationSource, 24),
-    rating: Number(body.rating),
-    vibe: Number(body.vibe),
+    rating: nullableInteger(body.rating, 1, 5),
+    vibe: nullableInteger(body.vibe, 1, 5),
     priceCents: nullableInteger(body.priceCents, 0, 1000000),
     drinkSize: cleanString(body.drinkSize, 40),
     milkType: cleanString(body.milkType, 60),
@@ -588,9 +646,12 @@ function normalizeEntry(body, user) {
       ? body.addOns.map((value) => cleanString(value, 80)).filter(Boolean).slice(0, 12)
       : [],
     notes: cleanString(body.notes, 500) || "",
-    wouldOrderAgain: Boolean(body.wouldOrderAgain),
-    shareCommunity: Boolean(body.shareCommunity),
+    wouldOrderAgain: typeof body.wouldOrderAgain === "boolean" ? body.wouldOrderAgain : null,
+    shareCommunity: status === "complete" && Boolean(body.shareCommunity),
     favorite: false,
+    status,
+    draftStep: nullableInteger(body.draftStep, 1, 3) || 1,
+    completedAt: status === "complete" ? (cleanTimestamp(body.completedAt) || new Date().toISOString()) : null,
     createdAt: cleanTimestamp(body.createdAt) || new Date().toISOString()
   };
 }
@@ -601,8 +662,27 @@ function sanitizeSettings(settings) {
   if (["system", "light", "dark"].includes(settings.theme)) result.theme = settings.theme;
   if (["normal", "large", "xlarge"].includes(settings.textSize)) result.textSize = settings.textSize;
 
-  for (const key of ["highContrast", "reduceMotion", "readableFont", "largeTargets", "reduceClutter"]) {
+  for (const key of ["highContrast", "reduceMotion", "readableFont", "largeTargets", "reduceClutter", "tourComplete"]) {
     if (typeof settings[key] === "boolean") result[key] = settings[key];
+  }
+
+  for (const [key, maxLength] of [
+    ["defaultMilk", 60],
+    ["defaultSweetness", 40],
+    ["defaultSize", 40],
+    ["defaultAddOns", 400]
+  ]) {
+    if (typeof settings[key] === "string") result[key] = settings[key].slice(0, maxLength);
+  }
+
+  if (settings.earnedAchievements && typeof settings.earnedAchievements === "object" && !Array.isArray(settings.earnedAchievements)) {
+    const earned = {};
+    for (const [key, value] of Object.entries(settings.earnedAchievements).slice(0, 50)) {
+      if (!/^[a-z0-9-]{1,80}$/.test(key)) continue;
+      const timestamp = cleanTimestamp(value);
+      if (timestamp) earned[key] = timestamp;
+    }
+    result.earnedAchievements = earned;
   }
 
   return result;
@@ -724,8 +804,6 @@ function supabaseFetch(env, service, path, init = {}) {
   headers.set("apikey", key);
   headers.set("accept", headers.get("accept") || "application/json");
 
-  // Legacy service-role keys are JWTs and still require a Bearer header.
-  // New sb_secret_ keys must only be sent in the apikey header.
   if (!key.startsWith("sb_secret_") && key.split(".").length === 3) {
     headers.set("authorization", `Bearer ${key}`);
   }
@@ -738,29 +816,20 @@ function supabaseFetch(env, service, path, init = {}) {
 }
 
 async function serveAsset(request, env) {
-  const url = new URL(request.url);
   const response = await env.ASSETS.fetch(request);
+  if (!response.ok) return response;
 
-  if ((url.pathname === "/" || url.pathname === "/index.html") && response.ok) {
-    let html = await response.text();
-    if (!html.includes('src="/cloud-sync.js"')) {
-      html = html.replace(
-        '<script src="/app.js" defer></script>',
-        '<script src="/cloud-sync.js" defer></script>\n  <script src="/app.js" defer></script>'
-      );
-    }
+  const url = new URL(request.url);
+  const headers = new Headers(response.headers);
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("permissions-policy", "camera=(self), geolocation=(self)");
 
-    const headers = new Headers(response.headers);
-    headers.delete("content-length");
-    headers.delete("content-encoding");
-    headers.set("content-type", "text/html; charset=utf-8");
+  if (url.pathname === "/" || url.pathname === "/index.html") {
     headers.set("cache-control", "no-cache");
-    headers.set("x-content-type-options", "nosniff");
-    headers.set("referrer-policy", "strict-origin-when-cross-origin");
-    return new Response(html, { status: response.status, headers });
   }
 
-  return response;
+  return new Response(response.body, { status: response.status, headers });
 }
 
 function logout(url) {
