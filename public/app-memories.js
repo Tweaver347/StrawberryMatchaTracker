@@ -215,7 +215,7 @@ async function toggleFavorite(entry) {
 async function toggleEntrySharing(entry) {
   const next = !entry.shareCommunity;
   const updated = { ...entry, shareCommunity: next, status: "complete" };
-  const saved = await saveCompleteEntry(updated, null, { quiet: true });
+  const saved = await saveCompleteEntry(updated, null, { quiet: true, requireCloud: Boolean(state.user && state.cloudAvailable) });
   if (!saved) return;
   replaceEntry(saved);
   if (next) {
